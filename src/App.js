@@ -24,7 +24,7 @@ import CustomersPage from './Dashboards/Customerpg';
 import ReportsPage from './Dashboards/Reportpg';
 import IntegrationsPage from './Dashboards/Integratepg';
 
-
+import { ToastContainer } from 'react-toastify';
 
 function AppRoutes() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -69,6 +69,20 @@ function AppRoutes() {
           <Route path="/" element={<Dashboard />} />
         
         </Routes>
+
+        <ToastContainer
+          position="top-center" // This positions the toast at the top center
+          autoClose={4000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
+
       </div>
     </Router>
   );
