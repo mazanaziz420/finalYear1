@@ -7,12 +7,16 @@ import {
   AUTH_SET_LOADING,
   AUTH_NOTIFICATION,
 } from '../types';
+import { 
+  PRODUCTION_BACKEND_URL, 
+  TESTING_BACKEND_URL 
+} from '../urls';
 
 export const login = (email, password) => async (dispatch) => {
     dispatch({ type: AUTH_SET_LOADING, payload: true });
   
     try {
-      const response = await axios.post('https://evee-backend.vercel.app/login', { email, password });
+      const response = await axios.post(`${PRODUCTION_BACKEND_URL}/login`, { email, password });
       const { token, user } = response.data;
   
       // Save token and user details in localStorage

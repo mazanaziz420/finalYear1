@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { submitVenueForm } from '../store/action/venuProviderAction';
 import venueProviderImage from '../02.jpg'; // Importing the image for Venue Provider card
 import vendorImage from '../vendor-image.jpg'; // Importing the image for Vendor card
 import OrganizerVendorForm from './OrganizerVendorForm';
@@ -8,6 +11,9 @@ import EntertainmentVendorForm from './EntertainmentVendorForm';
 
 
 const VenueProviderForm = () => {
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.venueProvider);
+
   const [typeOfProperty, setTypeOfProperty] = useState('');
   const [otherPropertyType, setOtherPropertyType] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -76,39 +82,33 @@ const VenueProviderForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle form submission for Venue Provider
-    console.log({
-      // personal information
-      firstName,
-      lastName,
-      email,
-      phone,
-      id,
-      // venue Details
-      nameOfvenue,
-      website,
-      typeOfProperty,
-      otherPropertyType,
-      coverPicture,
-      venuePictures,
-      city,
-      address,
-      state,
-      capacity,
-      size,
-      pinLocation,
-      placeDescription,
-      // Facilities
-      additionalServices,
-      amenities,
-      // booking Information
-      pricing,
-      availability,
-      
-      // Additional Information
-      rulesAndRegulations,
-      specialFeatures,
-    });
+    const formData = {
+        firstName,
+        lastName,
+        email,
+        phone,
+        id,
+        nameOfvenue,
+        website,
+        typeOfProperty,
+        otherPropertyType,
+        coverPicture,
+        venuePictures,
+        city,
+        address,
+        state,
+        capacity,
+        size,
+        pinLocation,
+        placeDescription,
+        additionalServices,
+        amenities,
+        pricing: JSON.stringify(pricing), // Convert pricing to JSON string
+        availability,
+        rulesAndRegulations,
+        specialFeatures,
+    };
+    dispatch(submitVenueForm(formData));
   };
 
   return (
@@ -622,13 +622,14 @@ const VenueProviderForm = () => {
             I agree to Privacy Policy
           </label>
       </div>
-
       <button
         type="submit"
         className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4"
+        disabled={loading}
       >
-        Submit
+        {loading ? 'Submitting...' : 'Submit'}
       </button>
+      {error && <p className="text-red-500 mt-4">{error}</p>}
     </form>
   );
 };
@@ -751,25 +752,48 @@ const VendorForm = () => {
 
 const MainApp = () => {
   const [selectedCard, setSelectedCard] = useState('');
+  const navigate = useNavigate(); // Initialize useNavigate hook
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      navigate('/'); // Navigate to '/' if no user is found
+      return;
+    }
+
+    switch (user.user_type) {
+      case 'VENUE_PROVIDER':
+        setSelectedCard('VenueProvider');
+        break;
+      case 'VENDOR':
+        setSelectedCard('Vendor');
+        break;
+      default:
+        navigate('/'); // Navigate to '/' if user_type does not match
+    }
+  }, [navigate]);
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-gray-700 font-bold text-center text-3xl font-serif mb-8">Who are you ?</h1><br></br>
+      <h1 className="text-gray-700 font-bold text-center text-3xl font-serif mb-8">
+        {selectedCard === 'VenueProvider' ? 'Venue Provider' : selectedCard === 'Vendor' ? 'Vendor' : ''}
+      </h1>
+      <br />
       {!selectedCard && (
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
           <div
             onClick={() => setSelectedCard('VenueProvider')}
-            className="cursor-pointer bg-gray-800 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 "
-            style={{ height: '350px', width: '400px' , backgroundImage: `url(${venueProviderImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+            className="cursor-pointer bg-gray-800 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200"
+            style={{ height: '350px', width: '400px', backgroundImage: `url(${venueProviderImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
           >
             <div className="p-2 bg-gray-800 bg-opacity-100 backdrop-filter backdrop-blur-lg">
-              <h3 className="text-lg text-white  font-semibold">Venue Provider</h3>
+              <h3 className="text-lg text-white font-semibold">Venue Provider</h3>
             </div>
           </div>
           <div
             onClick={() => setSelectedCard('Vendor')}
             className="cursor-pointer bg-gray-200 rounded-md shadow-lg hover:shadow-lg transition-shadow duration-200"
-            style={{ height: '350px',width: '400px', backgroundImage: `url(${vendorImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+            style={{ height: '350px', width: '400px', backgroundImage: `url(${vendorImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
           >
             <div className="p-2 bg-gray-800 bg-opacity-100 backdrop-filter backdrop-blur-lg">
               <h3 className="text-lg text-white font-semibold">Vendor</h3>
@@ -782,7 +806,6 @@ const MainApp = () => {
       {selectedCard === 'Vendor' && <VendorForm />}
     </div>
   );
-
 };
 
 export default MainApp;
