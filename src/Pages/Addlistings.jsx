@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { submitVenueForm } from '../store/action/venuProviderAction';
-import venueProviderImage from '../02.jpg'; // Importing the image for Venue Provider card
-import vendorImage from '../vendor-image.jpg'; // Importing the image for Vendor card
+import { submitVendorForm } from '../store/action/vendorAction';
 import OrganizerVendorForm from './OrganizerVendorForm';
 import FoodVendorForm from './FoodVendorForm';
 import MakeupVendorForm from './MakeupVendorForm';
@@ -639,6 +638,9 @@ const VenueProviderForm = () => {
 
 //Vendor form
 const VendorForm = () => {
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.vendor);
+
   const [selectedCategory, setSelectedCategory] = useState('');
   const [subcategory, setSubcategory] = useState('');
   const [name, setName] = useState('');
@@ -704,6 +706,20 @@ const VendorForm = () => {
       coverPicture,
       venuePictures,
     });
+    const formData = {
+      selectedCategory,
+      subcategory,
+      name,
+      city,
+      state,
+      zipCode,
+      address,
+      doorToDoorService,
+      description,
+      coverPicture,
+      venuePictures,
+    };
+    dispatch(submitVendorForm(formData))
   };
 
   return (
@@ -779,29 +795,6 @@ const MainApp = () => {
         {selectedCard === 'VenueProvider' ? 'Venue Provider' : selectedCard === 'Vendor' ? 'Vendor' : ''}
       </h1>
       <br />
-      {!selectedCard && (
-        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div
-            onClick={() => setSelectedCard('VenueProvider')}
-            className="cursor-pointer bg-gray-800 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200"
-            style={{ height: '350px', width: '400px', backgroundImage: `url(${venueProviderImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-          >
-            <div className="p-2 bg-gray-800 bg-opacity-100 backdrop-filter backdrop-blur-lg">
-              <h3 className="text-lg text-white font-semibold">Venue Provider</h3>
-            </div>
-          </div>
-          <div
-            onClick={() => setSelectedCard('Vendor')}
-            className="cursor-pointer bg-gray-200 rounded-md shadow-lg hover:shadow-lg transition-shadow duration-200"
-            style={{ height: '350px', width: '400px', backgroundImage: `url(${vendorImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-          >
-            <div className="p-2 bg-gray-800 bg-opacity-100 backdrop-filter backdrop-blur-lg">
-              <h3 className="text-lg text-white font-semibold">Vendor</h3>
-            </div>
-          </div>
-        </div>
-      )}
-
       {selectedCard === 'VenueProvider' && <VenueProviderForm />}
       {selectedCard === 'Vendor' && <VendorForm />}
     </div>
