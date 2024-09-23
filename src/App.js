@@ -26,6 +26,12 @@ import IntegrationsPage from './Dashboards/Integratepg';
 
 import { ToastContainer } from 'react-toastify';
 
+// Import Stripe Elements
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe("pk_test_51PzidUP7IPyRWGaHC4j7c4qNgdmBUcOw2hSVMMhTlLomE08j098oQRKw1Urdhp3EWIBHh8Pphj4UHqYqE7I2WllE00s1acrvWL"); // Ensure this environment variable is set
+
 function AppRoutes() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -54,24 +60,27 @@ function AppRoutes() {
           <Route path="/staff" element={<StaffDashboard />} />
           <Route path="/profile" element={<EditProfile />} />
           <Route path="/MainApp" element={<MainApp />} />
-          <Route path="/payment-method" element={<PaymentMethod />} />
           <Route path="/setting" element={<Setting/>} />
           <Route path="/login" element={<Login handleLogin={handleLogin} />} />
-        
-        
-        
-        
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/customers" element={<CustomersPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/integrations" element={<IntegrationsPage />} />
-          <Route path="/" element={<Dashboard />} />
-        
+          
+          {/* Wrap PaymentMethod component in Stripe Elements */}
+          <Route 
+            path="/payment-method" 
+            element={
+              <Elements stripe={stripePromise}>
+                <PaymentMethod />
+              </Elements>
+            }
+          />
         </Routes>
 
         <ToastContainer
-          position="top-center" // This positions the toast at the top center
+          position="top-center" 
           autoClose={4000}
           hideProgressBar={false}
           newestOnTop={false}
@@ -82,7 +91,6 @@ function AppRoutes() {
           pauseOnHover
           theme="light"
         />
-
       </div>
     </Router>
   );

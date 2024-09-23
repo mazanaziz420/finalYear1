@@ -8,6 +8,9 @@ import {
     GET_VENUES_REQUEST,
     GET_VENUES_SUCCESS,
     GET_VENUES_FAILURE,
+    GET_SINGLE_VENUE_REQUEST,
+    GET_SINGLE_VENUE_SUCCESS,
+    GET_SINGLE_VENUE_FAILURE,
     DELETE_VENUE_REQUEST,
     DELETE_VENUE_SUCCESS,
     DELETE_VENUE_FAILURE
@@ -68,6 +71,26 @@ export const getVenues = () => async (dispatch) => {
         toast.error("Failed to fetch venues. Please try again.");
     }
 };
+
+// Action to get venue by id
+export const getSingleVenue= (id) => async (dispatch) => {
+    const token = localStorage.getItem('token');
+    try {
+        dispatch({ type: GET_SINGLE_VENUE_REQUEST });
+
+        const response = await axios.get(`${PRODUCTION_BACKEND_URL}/venueProvider/get/makeup/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            }
+        });
+
+        dispatch({ type: GET_SINGLE_VENUE_SUCCESS, payload: response.data });
+    } catch (error) {
+        dispatch({ type: GET_SINGLE_VENUE_FAILURE, payload: error.message });
+        toast.error("Failed to fetch venues. Please try again.");
+    }
+};
+
 
 // Action to delete a venue by ID
 export const deleteVenue = (venueId) => async (dispatch) => {
