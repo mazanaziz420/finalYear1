@@ -83,7 +83,6 @@ export const getSingleVenue= (id) => async (dispatch) => {
                 'Authorization': `Bearer ${token}`,
             }
         });
-
         dispatch({ type: GET_SINGLE_VENUE_SUCCESS, payload: response.data });
     } catch (error) {
         dispatch({ type: GET_SINGLE_VENUE_FAILURE, payload: error.message });

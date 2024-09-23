@@ -4,7 +4,7 @@ import { PAYMENT_INTENT_SUCCESS, PAYMENT_INTENT_FAILURE, PAYMENT_INTENT_REQUEST 
 import { PRODUCTION_BACKEND_URL } from '../urls'; // Your backend URL
 
 export const createPaymentIntent = (paymentData) => async (dispatch) => {
-    dispatch({ type: PAYMEN, payload: true });
+    dispatch({ type: PAYMENT_INTENT_REQUEST, payload: true });
     try {
         const token = localStorage.getItem('token');
         const response = await axios.post(`${PRODUCTION_BACKEND_URL}/payment/create-payment-intent`, paymentData, {
@@ -16,7 +16,7 @@ export const createPaymentIntent = (paymentData) => async (dispatch) => {
         const { client_secret } = response.data;
 
         dispatch({ type: PAYMENT_INTENT_SUCCESS, payload: client_secret });
-        toast.success('Payment intent created!');
+        toast.success('Payment successfull.');
 
         // Proceed with client secret on the frontend to confirm payment
 
