@@ -1,17 +1,21 @@
-// Sidebar.jsx
 import { Link, useLocation } from 'react-router-dom';
-import { HomeIcon, ShoppingCartIcon, UsersIcon, PuzzlePieceIcon, ChartBarIcon} from '@heroicons/react/24/outline';
+import { HomeIcon, ShoppingCartIcon, UsersIcon, PlusIcon, PuzzlePieceIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 
-export default function Sidebar() {
+export default function Sidebar({ activeSection }) {  // Accept activeSection as a prop
     const location = useLocation();
 
     const menuItems = [
         { name: 'Dashboard', icon: HomeIcon, path: '/dashboard' },
-        { name: 'Orders', icon: ShoppingCartIcon, path: '/orders' },
-        { name: 'Customers', icon: UsersIcon, path: '/customers' },
-        { name: 'Reports', icon: ChartBarIcon, path: '/reports' },
-        { name: 'Integrations', icon: PuzzlePieceIcon, path: '/integrations' },
+        { name: 'My Profile', icon: UsersIcon, path: '/profile' },
+        { name: 'My Listing', icon: PlusIcon, path: '/MyListing' },
+        { name: 'Orders', icon: ShoppingCartIcon, path: '/Orderpage' },
+        { name: 'Recents', icon: ChartBarIcon, path: '/Recents' },
     ];
+
+    // Conditionally add the Staff item if the active section is 'Venues'
+    if (activeSection === 'Venues') {
+        menuItems.push({ name: 'Staff', icon: ChartBarIcon, path: '/MyStaff' });
+    }
 
     return (
         <div className="bg-gray-800 text-white w-64 h-screen">

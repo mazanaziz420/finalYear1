@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Chart from './Chart';
 import Deposits from './Deposits';
-import Orders from './RecOrders';
+import Recents from './Recents';
+import MyStaff from '../Pages/MyStaff';
 
 const Dashboard = () => {
+  const [activeSection, setActiveSection] = useState('Venues'); // Track active section
+
   return (
     <div className="flex">
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} />
 
       {/* Main Content */}
       <div className="flex-grow p-4 bg-gray-100">
@@ -25,10 +28,16 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Recent Orders */}
           <div className="mt-4 p-4 bg-white rounded shadow">
-            <Orders />
+            <Recents />
           </div>
+
+          {/* Conditionally render Staff component only for Venues */}
+          {activeSection === 'Venues' && (
+            <div className="mt-4 p-4 bg-white rounded shadow">
+              <MyStaff />
+            </div>
+          )}
         </div>
       </div>
     </div>

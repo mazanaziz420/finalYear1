@@ -2,6 +2,7 @@ import React from 'react';
 
 const Deposits = () => {
   return (
+    
     <div>
       <h2 className="text-lg font-medium text-blue-600">Recent Deposits</h2>
       <p className="text-4xl font-bold">$3,024.00</p>

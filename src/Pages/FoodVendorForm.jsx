@@ -11,8 +11,9 @@ const FoodVendorForm = () => {
   const [address, setAddress] = useState('');
   const [services, setServices] = useState([]);
   const [cuisine, setCuisine] = useState('');
-  const [menuItems, setMenuItems] = useState('');
-  const [pricing, setPricing] = useState('');
+  const [menuItems, setMenuItems] = useState([]);
+  const [newItemName, setNewItemName] = useState('');
+  const [newItemPrice, setNewItemPrice] = useState('');
   const [coverPhoto, setCoverPhoto] = useState(null);
   const [portfolioPictures, setPortfolioPictures] = useState([]);
   const [description, setDescription] = useState('');
@@ -34,6 +35,18 @@ const FoodVendorForm = () => {
     setPortfolioPictures([...portfolioPictures, ...files]);
   };
 
+  const handleAddMenuItem = () => {
+    if (newItemName && newItemPrice) {
+      setMenuItems([...menuItems, { name: newItemName, price: newItemPrice }]);
+      setNewItemName('');
+      setNewItemPrice('');
+    }
+  };
+
+  const handleRemoveMenuItem = (index) => {
+    setMenuItems(menuItems.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     // Handle form submission
@@ -45,11 +58,9 @@ const FoodVendorForm = () => {
       city,
       state,
       address, 
-     
       services,
       cuisine,
       menuItems,
-      pricing,
       coverPhoto,
       portfolioPictures,
       description,
@@ -155,37 +166,69 @@ const FoodVendorForm = () => {
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="cuisine">
             Cuisine Type
           </label>
-          <input
-            type="text"
+          <select
             id="cuisine"
             value={cuisine}
             onChange={(e) => setCuisine(e.target.value)}
             className="block w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-          />
+          >
+            <option value="">Select a cuisine type</option>
+            <option value="Caterers">Caterers</option>
+            <option value="Food Trucks">Food Trucks</option>
+            <option value="Bakers & Confectioners">Bakers & Confectioners</option>
+            <option value="Live Cooking Stalls">Live Cooking Stalls</option>
+            <option value="Buffet Service Providers">Buffet Service Providers</option>
+            <option value="Event Platter Services">Event Platter Services</option>
+            <option value="Specialty Cuisine Providers">Specialty Cuisine Providers</option>
+            <option value="Dessert Bars & Beverage Counters">Dessert Bars & Beverage Counters</option>
+            <option value="Biryani & Pulao Specialists">Biryani & Pulao Specialists</option>
+            <option value="Halwais (Traditional Sweetmakers)">Halwais (Traditional Sweetmakers)</option>
+            <option value="Corporate Catering Services">Corporate Catering Services</option>
+            <option value="Private Chefs or Boutique Catering">Private Chefs or Boutique Catering</option>
+          </select>
         </div>
         <div className="mb-4 col-span-2">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="menuItems">
-            Menu Items
-          </label>
-          <textarea
-            id="menuItems"
-            value={menuItems}
-            onChange={(e) => setMenuItems(e.target.value)}
-            className="block w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-            rows="4"
-          ></textarea>
-        </div>
-        <div className="mb-4 col-span-2">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="pricing">
-            Pricing (Note: Pricing is directly proportional to the number of people)
-          </label>
-          <input
-            type="text"
-            id="pricing"
-            value={pricing}
-            onChange={(e) => setPricing(e.target.value)}
-            className="block w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-          />
+          <label className="block text-gray-700 text-sm font-bold mb-2">Menu Items</label>
+          <div className="flex mb-2">
+            <input
+              type="text"
+              value={newItemName}
+              onChange={(e) => setNewItemName(e.target.value)}
+              placeholder="Item name"
+              className="flex-1 px-4 py-2 border rounded-l-md focus:outline-none focus:ring focus:border-blue-300"
+            />
+            <input
+              type="text"
+              value={newItemPrice}
+              onChange={(e) => setNewItemPrice(e.target.value)}
+              placeholder="Price"
+              className="w-1/4 px-4 py-2 border-t border-b border-r focus:outline-none focus:ring focus:border-blue-300"
+            />
+            <button
+              type="button"
+              onClick={handleAddMenuItem}
+              className="bg-blue-500 text-white px-4 py-2 rounded-r-md hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300"
+            >
+              Add
+            </button>
+          </div>
+          <div className="bg-white p-4 rounded-md max-h-60 overflow-y-auto">
+            {menuItems.map((item, index) => (
+              <div key={index} className="flex justify-between items-center mb-2 p-2 bg-gray-100 rounded">
+                <span>{item.name}</span>
+                <div>
+                  <span className="mr-2">${item.price}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveMenuItem(index)}
+                    className="text-red-500 hover:text-red-700 focus:outline-none"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="coverPhoto">
@@ -233,9 +276,8 @@ const FoodVendorForm = () => {
               />
               <span className="ml-2">Door to Door service</span>
             </label>
-            </div>
-            </div>
-            
+          </div>
+        </div>
         <div className="mb-4 col-span-2">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
             Description

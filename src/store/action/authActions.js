@@ -13,26 +13,29 @@ import {
 } from '../urls';
 
 export const login = (email, password) => async (dispatch) => {
-    dispatch({ type: AUTH_SET_LOADING, payload: true });
-  
-    try {
-      const response = await axios.post(`${PRODUCTION_BACKEND_URL}/login`, { email, password });
-      const { token, user } = response.data;
-  
-      // Save token and user details in localStorage
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-  
-      // Dispatch login action with user details
-      dispatch({ type: LOGIN, payload: { token, user } });
-      toast.success("Login successful!");
-    } catch (error) {
-      dispatch({ type: LOGIN_ERROR, payload: error.response.data.message });
-      toast.error(error.response.data.message);
-    } finally {
-      dispatch({ type: AUTH_SET_LOADING, payload: false });
-    }
-  };
+  dispatch({ type: AUTH_SET_LOADING, payload: true });
+
+  try {
+    const response = await axios.post(`${PRODUCTION_BACKEND_URL}/login`, { email, password });
+    const { token, user } = response.data;
+
+    // Save token and user details in localStorage
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+
+    // Dispatch login action with user details
+    dispatch({ type: LOGIN, payload: { token, user } });
+
+    // Return success response
+    return { success: true };
+  } catch (error) {
+    dispatch({ type: LOGIN_ERROR, payload: error.response.data.message });
+    return { success: false, message: error.response.data.message };
+  } finally {
+    dispatch({ type: AUTH_SET_LOADING, payload: false });
+  }
+};
+
   
 
 export const signup = (userData) => async (dispatch) => {

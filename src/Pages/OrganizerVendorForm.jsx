@@ -6,7 +6,15 @@ const OrganizerVendorForm = () => {
   const [phone, setPhone] = useState('');
   const [website, setWebsite] = useState('');
   const [services, setServices] = useState([]);
-  const [pricing, setPricing] = useState({ gold: '', platinum: '', silver: '' });
+  const [pricing, setPricing] = useState({
+    gold: '',
+    platinum: '',
+    silver: '',
+    goldItems: [],
+    platinumItems: [],
+    silverItems: []
+  });
+  
   const [portfolioPictures, setPortfolioPictures] = useState([]);
   const [coverPhoto, setCoverPhoto] = useState(null);
   const [description, setDescription] = useState('');
@@ -24,6 +32,35 @@ const OrganizerVendorForm = () => {
         ? prevServices.filter((s) => s !== service)
         : [...prevServices, service]
     );
+  };
+
+  const handlePricingChange = (e) => {
+    const { name, value } = e.target;
+    setPricing((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const addPackageItem = (tier) => {
+    setPricing((prev) => ({
+      ...prev,
+      [`${tier}Items`]: [...prev[`${tier}Items`], ''],
+    }));
+  };
+
+  const removePackageItem = (tier, index) => {
+    setPricing((prev) => ({
+      ...prev,
+      [`${tier}Items`]: prev[`${tier}Items`].filter((_, i) => i !== index),
+    }));
+  };
+
+  const handlePackageItemChange = (tier, index, value) => {
+    setPricing((prev) => ({
+      ...prev,
+      [`${tier}Items`]: prev[`${tier}Items`].map((item, i) => (i === index ? value : item)),
+    }));
   };
 
   const handlePortfolioChange = (e) => {
@@ -88,7 +125,72 @@ const OrganizerVendorForm = () => {
                 className="block w-1/2 mx-auto px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
                 placeholder="Specify other services"
               />
+              
             )}
+                   {/* Pricing & Packages */}
+            <div className="mb-6">
+              <h2 className="text-2xl font-semibold mb-4 text-gray-700">Pricing & Packages</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {['Silver', 'Gold', 'Platinum'].map((tier) => (
+                  <div key={tier} className="bg-white p-6 rounded-lg shadow-md">
+                    <h3 className="text-xl font-semibold mb-4 text-gray-800">{tier} Package</h3>
+                    <div className="mb-4">
+                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor={`${tier.toLowerCase()}Price`}>
+                        Price
+                      </label>
+                      <input
+                        type="number"
+                        id={`${tier.toLowerCase()}Price`}
+                        name={`${tier.toLowerCase()}Price`}
+                        value={pricing[`${tier.toLowerCase()}Price`]}
+                        onChange={handlePricingChange}
+                        className="w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor={`${tier.toLowerCase()}Description`}>
+                        Package Details
+                      </label>
+                      <textarea
+                        id={`${tier.toLowerCase()}Description`}
+                        name={`${tier.toLowerCase()}Description`}
+                        value={pricing[`${tier.toLowerCase()}Description`]}
+                        onChange={handlePricingChange}
+                        className="w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                        rows="4"
+                        placeholder={`Enter details for the ${tier} package...`}
+                      />
+                      <div className="space-y-2">
+                        {pricing[`${tier.toLowerCase()}Items`]?.map((item, index) => (
+                          <div key={index} className="flex items-center">
+                            <input
+                              type="text"
+                              value={item}
+                              onChange={(e) => handlePackageItemChange(tier.toLowerCase(), index, e.target.value)}
+                              className="flex-grow px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removePackageItem(tier.toLowerCase(), index)}
+                              className="ml-2 text-red-500 hover:text-red-700"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => addPackageItem(tier.toLowerCase())}
+                        className="mt-2 text-blue-500 hover:text-blue-700"
+                      >
+                        + Add Item
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         );
       case 'Decorators':
@@ -120,7 +222,72 @@ const OrganizerVendorForm = () => {
                 className="block w-1/2 mx-auto px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
                 placeholder="Specify other services"
               />
-            )}
+   ) }
+         {/* Pricing & Packages */}
+         <div className="mb-6">
+              <h2 className="text-2xl font-semibold mb-4 text-gray-700">Pricing & Packages</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {['Silver', 'Gold', 'Platinum'].map((tier) => (
+                  <div key={tier} className="bg-white p-6 rounded-lg shadow-md">
+                    <h3 className="text-xl font-semibold mb-4 text-gray-800">{tier} Package</h3>
+                    <div className="mb-4">
+                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor={`${tier.toLowerCase()}Price`}>
+                        Price
+                      </label>
+                      <input
+                        type="number"
+                        id={`${tier.toLowerCase()}Price`}
+                        name={`${tier.toLowerCase()}Price`}
+                        value={pricing[`${tier.toLowerCase()}Price`]}
+                        onChange={handlePricingChange}
+                        className="w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor={`${tier.toLowerCase()}Description`}>
+                        Package Details
+                      </label>
+                      <textarea
+                        id={`${tier.toLowerCase()}Description`}
+                        name={`${tier.toLowerCase()}Description`}
+                        value={pricing[`${tier.toLowerCase()}Description`]}
+                        onChange={handlePricingChange}
+                        className="w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                        rows="4"
+                        placeholder={`Enter details for the ${tier} package...`}
+                      />
+                      <div className="space-y-2">
+                        {pricing[`${tier.toLowerCase()}Items`]?.map((item, index) => (
+                          <div key={index} className="flex items-center">
+                            <input
+                              type="text"
+                              value={item}
+                              onChange={(e) => handlePackageItemChange(tier.toLowerCase(), index, e.target.value)}
+                              className="flex-grow px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removePackageItem(tier.toLowerCase(), index)}
+                              className="ml-2 text-red-500 hover:text-red-700"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => addPackageItem(tier.toLowerCase())}
+                        className="mt-2 text-blue-500 hover:text-blue-700"
+                      >
+                        + Add Item
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+           
           </div>
         );
       case 'Event Resource Provider':
@@ -134,9 +301,24 @@ const OrganizerVendorForm = () => {
                   onChange={() => handleServicesChange(service)}
                 />
                 <span className="ml-2">{service}</span>
-              </label>
+              </label> 
+                
             ))}
-          </div>
+          
+         
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="pricing">
+            Pricing 
+          </label>
+          <input
+            type="number"
+            id="pricing"
+            value={pricing}
+            onChange={(e) => setPricing(e.target.value)}
+            className="block w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+          />
+        </div>
+          
+          
         );
       case 'Other':
         return (
@@ -161,6 +343,8 @@ const OrganizerVendorForm = () => {
                 onChange={(e) => setOtherCategory(e.target.value)}
                 className="block w-1/2 mx-auto px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
               />
+              
+              
             </div>
           </>
         );
@@ -323,6 +507,16 @@ const OrganizerVendorForm = () => {
               placeholder="Enter location URL or coordinates"
               className="block w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
             />
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="pricing">
+            Pricing 
+          </label>
+          <input
+            type="number"
+            id="pricing"
+            value={pricing}
+            onChange={(e) => setPricing(e.target.value)}
+            className="block w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+          />
           </div>
         )}
         <div className="mb-4 col-span-2">

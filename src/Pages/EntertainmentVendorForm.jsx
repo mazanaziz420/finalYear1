@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 
-const EntertainmentVendorForm = () => {
+export default function Component() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [website, setWebsite] = useState('');
   const [services, setServices] = useState([]);
-  const [pricing, setPricing] = useState('');
+  const [pricingStructure, setPricingStructure] = useState('hourly');
+  const [hourlyRate, setHourlyRate] = useState('');
+  const [performanceRate, setPerformanceRate] = useState('');
   const [coverPhoto, setCoverPhoto] = useState(null);
   const [portfolioVideos, setPortfolioVideos] = useState([]);
   const [description, setDescription] = useState('');
@@ -40,7 +42,9 @@ const EntertainmentVendorForm = () => {
       phone,
       website,
       services,
-      pricing,
+      pricingStructure,
+      hourlyRate,
+      performanceRate,
       coverPhoto,
       portfolioVideos,
       description,
@@ -141,74 +145,70 @@ const EntertainmentVendorForm = () => {
         <div className="mb-4 col-span-2">
           <label className="block text-gray-700 text-sm font-bold mb-2">Services Offered</label>
           <div className="flex flex-wrap">
-            <label className="inline-flex items-center mr-4 mb-2">
+            {['Qawwali', 'Solo Singer', 'Bands', 'Band-Baja', 'Choreographers', 'Dancers', 'DJ'].map((service) => (
+              <label key={service} className="inline-flex items-center mr-4 mb-2">
+                <input
+                  type="checkbox"
+                  className="form-checkbox text-blue-500"
+                  onChange={() => handleServicesChange(service)}
+                  checked={services.includes(service)}
+                />
+                <span className="ml-2">{service}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="mb-4 col-span-2">
+          <label className="block text-gray-700 text-sm font-bold mb-2">Pricing Structure</label>
+          <div className="flex items-center space-x-4">
+            <label className="inline-flex items-center">
               <input
-                type="checkbox"
-                className="form-checkbox text-blue-500"
-                onChange={() => handleServicesChange('Qawwali')}
+                type="radio"
+                className="form-radio text-blue-500"
+                name="pricingStructure"
+                value="hourly"
+                checked={pricingStructure === 'hourly'}
+                onChange={(e) => setPricingStructure(e.target.value)}
               />
-              <span className="ml-2">Qawwali</span>
+              <span className="ml-2">Hourly Rate</span>
             </label>
-            <label className="inline-flex items-center mr-4 mb-2">
+            <label className="inline-flex items-center">
               <input
-                type="checkbox"
-                className="form-checkbox text-blue-500"
-                onChange={() => handleServicesChange('Solo Singer')}
+                type="radio"
+                className="form-radio text-blue-500"
+                name="pricingStructure"
+                value="performance"
+                checked={pricingStructure === 'performance'}
+                onChange={(e) => setPricingStructure(e.target.value)}
               />
-              <span className="ml-2">Solo Singer</span>
-            </label>
-            <label className="inline-flex items-center mr-4 mb-2">
-              <input
-                type="checkbox"
-                className="form-checkbox text-blue-500"
-                onChange={() => handleServicesChange('Bands')}
-              />
-              <span className="ml-2">Bands</span>
-            </label>
-            <label className="inline-flex items-center mr-4 mb-2">
-              <input
-                type="checkbox"
-                className="form-checkbox text-blue-500"
-                onChange={() => handleServicesChange('Band-Baja')}
-              />
-              <span className="ml-2">Band-Baja</span>
-            </label>
-            <label className="inline-flex items-center mr-4 mb-2">
-              <input
-                type="checkbox"
-                className="form-checkbox text-blue-500"
-                onChange={() => handleServicesChange('Choreographers')}
-              />
-              <span className="ml-2">Choreographers</span>
-            </label>
-            <label className="inline-flex items-center mr-4 mb-2">
-              <input
-                type="checkbox"
-                className="form-checkbox text-blue-500"
-                onChange={() => handleServicesChange('Dancers')}
-              />
-              <span className="ml-2">Dancers</span>
-            </label>
-            <label className="inline-flex items-center mr-4 mb-2">
-              <input
-                type="checkbox"
-                className="form-checkbox text-blue-500"
-                onChange={() => handleServicesChange('DJ')}
-              />
-              <span className="ml-2">DJ</span>
+              <span className="ml-2">Per Performance</span>
             </label>
           </div>
         </div>
         <div className="mb-4 col-span-2">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="pricing">
-            Pricing
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="hourlyRate">
+            Hourly Rate (PKR)
           </label>
           <input
-            type="text"
-            id="pricing"
-            value={pricing}
-            onChange={(e) => setPricing(e.target.value)}
+            type="number"
+            id="hourlyRate"
+            value={hourlyRate}
+            onChange={(e) => setHourlyRate(e.target.value)}
             className="block w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+            placeholder="e.g., 5000"
+          />
+        </div>
+        <div className="mb-4 col-span-2">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="performanceRate">
+            Rate per Performance (PKR)
+          </label>
+          <input
+            type="number"
+            id="performanceRate"
+            value={performanceRate}
+            onChange={(e) => setPerformanceRate(e.target.value)}
+            className="block w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+            placeholder="e.g., 50000"
           />
         </div>
         <div className="mb-4">
@@ -254,6 +254,4 @@ const EntertainmentVendorForm = () => {
       </button>
     </form>
   );
-};
-
-export default EntertainmentVendorForm;
+}
