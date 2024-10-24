@@ -8,6 +8,13 @@ import {
   SEND_BOOKING_REQUEST,
   SEND_BOOKING_SUCCESS,
   SEND_BOOKING_FAILURE,
+  SEND_BOOKING_ACCEPT_FAILURE,
+  SEND_BOOKING_ACCEPT_REQUEST, 
+  SEND_BOOKING_ACCEPT_SUCCESS,
+  SEND_BOOKING_REJECT_FAILURE,
+  SEND_BOOKING_REJECT_REQUEST, 
+  SEND_BOOKING_REJECT_SUCCESS,
+  CHECK_BOOKING_REQUEST_FOR_VENUE_PROVIDER_FAILURE
 } from '../types';
 import { PRODUCTION_BACKEND_URL } from '../urls';
 
@@ -16,8 +23,8 @@ export const checkAvailability = (venueId) => async (dispatch) => {
   dispatch({ type: CHECK_AVAILABILITY_REQUEST });
 
   try {
-    const response = await axios.get(`${PRODUCTION_BACKEND_URL}/venues/${venueId}/availability`);
-    dispatch({ type: CHECK_AVAILABILITY_SUCCESS, payload: response.data.available_dates });
+    const response = await axios.get(`${PRODUCTION_BACKEND_URL}/booking/venues/${venueId}/availability`);
+    dispatch({ type: CHECK_AVAILABILITY_SUCCESS, payload: response.data.not_available_dates });
   } catch (error) {
     dispatch({ type: CHECK_AVAILABILITY_FAILURE, payload: error.message });
     toast.error("Failed to check availability.");
@@ -29,7 +36,7 @@ export const sendBookingRequest = (bookingData) => async (dispatch) => {
   dispatch({ type: SEND_BOOKING_REQUEST });
 
   try {
-    const response = await axios.post(`${PRODUCTION_BACKEND_URL}/venues/${bookingData.venueId}/book`, bookingData);
+    const response = await axios.post(`${PRODUCTION_BACKEND_URL}/booking/venues/${bookingData.venueId}/book`, bookingData);
     dispatch({ type: SEND_BOOKING_SUCCESS, payload: response.data });
     toast.success("Booking request submitted successfully.");
   } catch (error) {
