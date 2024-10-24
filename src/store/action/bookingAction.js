@@ -14,7 +14,9 @@ import {
   SEND_BOOKING_REJECT_FAILURE,
   SEND_BOOKING_REJECT_REQUEST, 
   SEND_BOOKING_REJECT_SUCCESS,
-  CHECK_BOOKING_REQUEST_FOR_VENUE_PROVIDER_FAILURE
+  CHECK_BOOKING_REQUEST_FOR_VENUE_PROVIDER_FAILURE,
+  CHECK_BOOKING_REQUEST_FOR_VENUE_PROVIDER_REQUEST,
+  CHECK_BOOKING_REQUEST_FOR_VENUE_PROVIDER_SUCCESS,
 } from '../types';
 import { PRODUCTION_BACKEND_URL } from '../urls';
 
@@ -44,3 +46,4 @@ export const sendBookingRequest = (bookingData) => async (dispatch) => {
     toast.error("Failed to submit booking request.");
   }
 };
+
