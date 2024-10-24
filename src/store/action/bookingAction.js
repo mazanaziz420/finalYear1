@@ -47,3 +47,44 @@ export const sendBookingRequest = (bookingData) => async (dispatch) => {
   }
 };
 
+// Action to accept booking
+export const acceptBooking = (bookingId) => async (dispatch) => {
+  dispatch({ type: ACCEPT_BOOKING_REQUEST });
+
+  try {
+    const response = await axios.post(`${PRODUCTION_BACKEND_URL}/booking/${bookingId}/accept`);
+    dispatch({ type: ACCEPT_BOOKING_SUCCESS, payload: response.data });
+    toast.success("Booking accepted successfully.");
+  } catch (error) {
+    dispatch({ type: ACCEPT_BOOKING_FAILURE, payload: error.message });
+    toast.error("Failed to accept booking.");
+  }
+};
+
+// Action to reject booking
+export const rejectBooking = (bookingId) => async (dispatch) => {
+  dispatch({ type: REJECT_BOOKING_REQUEST });
+
+  try {
+    const response = await axios.post(`${PRODUCTION_BACKEND_URL}/booking/${bookingId}/reject`);
+    dispatch({ type: REJECT_BOOKING_SUCCESS, payload: response.data });
+    toast.success("Booking rejected successfully.");
+  } catch (error) {
+    dispatch({ type: REJECT_BOOKING_FAILURE, payload: error.message });
+    toast.error("Failed to reject booking.");
+  }
+};
+
+// Action to get bookings for the provider
+export const getBookingsForProvider = (providerId, status) => async (dispatch) => {
+  dispatch({ type: GET_BOOKINGS_FOR_PROVIDER_REQUEST });
+
+  try {
+    const response = await axios.post(`${PRODUCTION_BACKEND_URL}/provider/bookings`, { provider_id: providerId, status });
+    dispatch({ type: GET_BOOKINGS_FOR_PROVIDER_SUCCESS, payload: response.data.bookings });
+  } catch (error) {
+    dispatch({ type: GET_BOOKINGS_FOR_PROVIDER_FAILURE, payload: error.message });
+    toast.error("Failed to fetch bookings for provider.");
+  }
+};
+
