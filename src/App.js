@@ -87,6 +87,7 @@ function AppRoutes() {
 
   const handleLogin = () => {
     setIsLoggedIn(true);
+    console.log('is login? ', isLoggedIn);
   };
 
   const handleLogout = () => {

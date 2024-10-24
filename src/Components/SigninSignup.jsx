@@ -63,6 +63,7 @@ const SigninSignup = ({ handleLogin }) => {
       const result = await dispatch(login(email, password));
       if (result.success) {
         toast.success("Login successful!");
+        handleLogin();
         navigate('/'); // Redirect after login only on success
       } else {
         toast.error(result.message || "Login failed. Please try again.");

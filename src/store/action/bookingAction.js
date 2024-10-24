@@ -8,15 +8,15 @@ import {
   SEND_BOOKING_REQUEST,
   SEND_BOOKING_SUCCESS,
   SEND_BOOKING_FAILURE,
-  SEND_BOOKING_ACCEPT_FAILURE,
-  SEND_BOOKING_ACCEPT_REQUEST, 
-  SEND_BOOKING_ACCEPT_SUCCESS,
-  SEND_BOOKING_REJECT_FAILURE,
-  SEND_BOOKING_REJECT_REQUEST, 
-  SEND_BOOKING_REJECT_SUCCESS,
-  CHECK_BOOKING_REQUEST_FOR_VENUE_PROVIDER_FAILURE,
-  CHECK_BOOKING_REQUEST_FOR_VENUE_PROVIDER_REQUEST,
-  CHECK_BOOKING_REQUEST_FOR_VENUE_PROVIDER_SUCCESS,
+  ACCEPT_BOOKING_REQUEST,
+  ACCEPT_BOOKING_SUCCESS,
+  ACCEPT_BOOKING_FAILURE,
+  REJECT_BOOKING_REQUEST,
+  REJECT_BOOKING_SUCCESS,
+  REJECT_BOOKING_FAILURE,
+  GET_BOOKINGS_FOR_PROVIDER_REQUEST,
+  GET_BOOKINGS_FOR_PROVIDER_SUCCESS,
+  GET_BOOKINGS_FOR_PROVIDER_FAILURE,
 } from '../types';
 import { PRODUCTION_BACKEND_URL } from '../urls';
 
@@ -80,7 +80,7 @@ export const getBookingsForProvider = (providerId, status) => async (dispatch) =
   dispatch({ type: GET_BOOKINGS_FOR_PROVIDER_REQUEST });
 
   try {
-    const response = await axios.post(`${PRODUCTION_BACKEND_URL}/provider/bookings`, { provider_id: providerId, status });
+    const response = await axios.post(`${PRODUCTION_BACKEND_URL}/booking/provider/bookings`, { provider_id: providerId, status });
     dispatch({ type: GET_BOOKINGS_FOR_PROVIDER_SUCCESS, payload: response.data.bookings });
   } catch (error) {
     dispatch({ type: GET_BOOKINGS_FOR_PROVIDER_FAILURE, payload: error.message });
