@@ -1,19 +1,28 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AiOutlineClose, AiOutlineMenu, AiOutlineDown, AiOutlineRight, AiOutlineUser } from 'react-icons/ai';
+import { AiOutlineClose, AiOutlineMenu, AiOutlineDown, AiOutlineRight, AiOutlineUser, AiOutlineBell } from 'react-icons/ai';
+import NotificationDropdown from './NotificationDropdown';
+import { useAuth } from '../Context/AuthContext';
+
 
 const Navbar = ({ isLoggedIn, handleLogout }) => {
   const [nav, setNav] = useState(false);
   const [servicesDropdown, setServicesDropdown] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const { LoggedIn } = useAuth();
   const handleNav = () => {
     setNav(!nav);
   };
 
+
   const toggleServicesDropdown = () => {
     setServicesDropdown(!servicesDropdown);
+  };
+
+  const toggleNotifications = () => {
+    setNotificationsOpen(!notificationsOpen); // Toggle notification dropdown
   };
 
   const handleSubmenu = (submenu) => {
@@ -142,8 +151,16 @@ const Navbar = ({ isLoggedIn, handleLogout }) => {
           </div>
           <div className="flex items-center">
             <Link to="/MainApp" className="text-gray-300 hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium">Add Listing</Link>
-            {isLoggedIn ? (
+            {LoggedIn ? (
               <>
+                {/* Notification Bell Icon */}
+                <div className="relative">
+                  <button onClick={toggleNotifications} className="text-gray-300 hover:bg-gray-700 p-2 rounded-md">
+                    <AiOutlineBell size={20} />
+                  </button>
+                  {notificationsOpen && <NotificationDropdown />}
+                </div>
+
                 <div className="relative">
                   <button onClick={handleProfileMenu} className="text-gray-300 hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium flex items-center">
                     <AiOutlineUser className="mr-2" />

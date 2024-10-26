@@ -3,6 +3,8 @@ import Layout from '../Components/Layout';
 import { Link } from 'react-router-dom';
 
 const CustomerDashboard = () => {
+  const user = JSON.parse(localStorage.getItem('user'));
+
   return (
     <Layout role="customer">
       <h1 className="text-2xl font-bold font-serif mb-6">Welcome!</h1>
@@ -50,11 +52,11 @@ const CustomerDashboard = () => {
       <section className="mb-6">
         <h2 className="text-xl text-gray-800 font-semibold mb-3">Profile Management</h2>
         <div className="bg-gray-300 p-4 rounded shadow">
-          <p className="text-black font-semiboldS">Name: Mazan Aziz</p>
-          <p className="text-black">Email: mazanaziz420@gmail.com</p>
+          <p className="text-black font-semiboldS">Name: {user.full_name}</p>
+          <p className="text-black">Email: {user.email}</p>
           <Link to="/profile">
-               <button className="mt-3 bg-blue-500 text-white px-3 py-2 rounded hover:bg-cyan-700">Edit Profile</button>
-            </Link>
+            <button className="mt-3 bg-blue-500 text-white px-3 py-2 rounded hover:bg-cyan-700">Edit Profile</button>
+          </Link>
           
         </div>
       </section>

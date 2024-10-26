@@ -1,24 +1,50 @@
 'use client'
 
-import { useState } from 'react'
-import { CreditCard, Trash2, Plus, ChevronDown, ChevronUp } from 'lucide-react'
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { CreditCard, Trash2, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { addPaymentMethod, deletePaymentMethod, getPaymentMethods } from '../store/action/paymentMethodAction';
+
 
 export default function PaymentAndBilling() {
-  const [billingHistoryExpanded, setBillingHistoryExpanded] = useState(true)
-  const [paymentMethodsExpanded, setPaymentMethodsExpanded] = useState(true)
+  const dispatch = useDispatch();
+  const paymentMethods = useSelector(state => state.paymentMethods);
+  const [billingHistoryExpanded, setBillingHistoryExpanded] = useState(true);
+  const [paymentMethodsExpanded, setPaymentMethodsExpanded] = useState(true);
+  const [newCardModalOpen, setNewCardModalOpen] = useState(false);
+  const [cardData, setCardData] = useState({ cardNumber: '', expiry: '', cvc: '' });
+  const token = localStorage.getItem('token');
 
   const billingHistory = [
     { id: 1, date: '2023-11-01', amount: 99.99, description: 'Monthly Subscription', status: 'Paid' },
     { id: 2, date: '2023-10-01', amount: 99.99, description: 'Monthly Subscription', status: 'Paid' },
     { id: 3, date: '2023-09-01', amount: 99.99, description: 'Monthly Subscription', status: 'Paid' },
-  ]
+  ];
 
-  const paymentMethods = [
-    { id: 1, type: 'Visa', last4: '4242', expiry: '12/24' },
-    { id: 2, type: 'Mastercard', last4: '5555', expiry: '10/25' },
-  ]
+  // const paymentMethods = [
+  //   { id: 1, type: 'Visa', last4: '4242', expiry: '12/24' },
+  //   { id: 2, type: 'Mastercard', last4: '5555', expiry: '10/25' },
+  // ]
 
-  const [newCardModalOpen, setNewCardModalOpen] = useState(false)
+  useEffect(() => {
+    dispatch(getPaymentMethods(token)); // Fetch existing payment methods on component mount
+  }, [dispatch]);
+
+  const handleAddCard = (e) => {
+    e.preventDefault();
+    const paymentData = {
+      card_number: cardData.cardNumber,
+      expiry: cardData.expiry,
+      cvc: cardData.cvc,
+    };
+    dispatch(addPaymentMethod(token, paymentData));
+    setNewCardModalOpen(false);
+    setCardData({ cardNumber: '', expiry: '', cvc: '' }); // Clear form after submission
+  };
+
+  const handleDeleteCard = (paymentId) => {
+    dispatch(deletePaymentMethod(paymentId, token));
+  };
 
   const BillingHistoryItem = ({ item }) => (
     <div className="flex justify-between items-center py-4 border-b last:border-b-0">
@@ -44,7 +70,7 @@ export default function PaymentAndBilling() {
           <p className="text-sm text-gray-600">Expires {method.expiry}</p>
         </div>
       </div>
-      <button className="text-red-600 hover:text-red-800">
+      <button className="text-red-600 hover:text-red-800" onClick={() => handleDeleteCard(method.id)}>
         <Trash2 className="w-5 h-5" />
       </button>
     </div>
@@ -86,9 +112,13 @@ export default function PaymentAndBilling() {
           </div>
           {paymentMethodsExpanded && (
             <div>
-              {paymentMethods.map(method => (
-                <PaymentMethodItem key={method.id} method={method} />
-              ))}
+              {Array.isArray(paymentMethods) && paymentMethods.length > 0 ? (
+                paymentMethods.map(method => (
+                  <PaymentMethodItem key={method.id} method={method} />
+                ))
+              ) : (
+                <p>No payment methods available.</p>
+              )}
               <button
                 onClick={() => setNewCardModalOpen(true)}
                 className="mt-4 flex items-center text-blue-600 hover:text-blue-800"
@@ -104,19 +134,41 @@ export default function PaymentAndBilling() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg p-6 w-full max-w-md">
               <h3 className="text-xl font-semibold mb-4">Add New Payment Method</h3>
-              <form className="space-y-4">
+              <form className="space-y-4" onSubmit={handleAddCard}>
                 <div>
                   <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700">Card Number</label>
-                  <input type="text" id="cardNumber" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+                  <input 
+                    type="text" 
+                    id="cardNumber" 
+                    value={cardData.cardNumber} 
+                    onChange={(e) => setCardData({ ...cardData, cardNumber: e.target.value })} 
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" 
+                    required
+                  />
                 </div>
                 <div className="flex space-x-4">
                   <div className="flex-1">
                     <label htmlFor="expiry" className="block text-sm font-medium text-gray-700">Expiry Date</label>
-                    <input type="text" id="expiry" placeholder="MM/YY" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+                    <input 
+                      type="text" 
+                      id="expiry" 
+                      placeholder="MM/YY" 
+                      value={cardData.expiry} 
+                      onChange={(e) => setCardData({ ...cardData, expiry: e.target.value })} 
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" 
+                      required 
+                    />
                   </div>
                   <div className="flex-1">
                     <label htmlFor="cvc" className="block text-sm font-medium text-gray-700">CVC</label>
-                    <input type="text" id="cvc" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+                    <input 
+                      type="text" 
+                      id="cvc" 
+                      value={cardData.cvc} 
+                      onChange={(e) => setCardData({ ...cardData, cvc: e.target.value })} 
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" 
+                      required 
+                    />
                   </div>
                 </div>
                 <div className="flex justify-end space-x-2 mt-4">
