@@ -126,17 +126,18 @@ const PaymentMethod = () => {
   const handleBookingSubmit = (e) => {
     e.preventDefault();
 
-    if (!checkInDate || !checkOutDate) {
-      toast.error("Please select check-in and check-out dates.");
-      return;
-    }
+    // if (!checkInDate || !checkOutDate) {
+    //   toast.error("Please select check-in and check-out dates.");
+    //   return;
+    // }
 
     const bookingData = {
       customer_id: userId,
+      customer_email: user.email,
       venueId: selectedItem._id,
       booking_date_range: [
-        checkInDate.toISOString().split('T')[0],
-        checkOutDate.toISOString().split('T')[0]
+        '22/05/2022',
+        '23/05/2022'
       ],
       serviceType,
       numberOfPeople,

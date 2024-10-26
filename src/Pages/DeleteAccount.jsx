@@ -1,18 +1,30 @@
 import React, { useState } from 'react';
 import { ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { useDispatch, useSelector } from "react-redux"; 
+import { deleteUser, verifyPassword } from "../store/action/userActions";
 
 const DeleteAccount = () => {
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector(state => state.user);
+  const passwordVerificationError = useSelector(state => state.user.verify_pass_error);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [password, setPassword] = useState('');
   const [reason, setReason] = useState('');
   const [otherReason, setOtherReason] = useState('');
 
-  const handleDeleteAccount = (e) => {
+  const handleDeleteAccount = async (e) => {
     e.preventDefault();
-    // Here you would typically make an API call to delete the account
-    console.log('Account deletion requested');
-    console.log('Reason for deletion:', reason === 'Other' ? otherReason : reason);
-    // After successful deletion, you might want to redirect the user or show a success message
+
+    const token = localStorage.getItem('token');
+
+    await dispatch(verifyPassword(token, password));
+    
+    if (passwordVerificationError) {
+      // Show error and return early if password verification fails
+      return;
+    }
+
+    dispatch(deleteUser(token));
   };
 
   return (
@@ -117,10 +129,11 @@ const DeleteAccount = () => {
             <button
               type="submit"
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              disabled={!confirmDelete || !password || !reason || (reason === 'Other' && !otherReason)}
+              disabled={!confirmDelete || !password || !reason || (reason === 'Other' && !otherReason) || loading}
             >
-              Delete My Account
+              {loading ? "Deleting..." : "Delete My Account"}
             </button>
+            {error && <p className="text-red-500">{error}</p>} 
           </div>
         </form>
         <div className="text-center">
