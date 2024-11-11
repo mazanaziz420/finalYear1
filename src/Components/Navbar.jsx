@@ -10,15 +10,10 @@ const Navbar = ({ isLoggedIn, handleLogout }) => {
   const [servicesDropdown, setServicesDropdown] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const { LoggedIn } = useAuth();
-  const user = JSON.parse(localStorage.getItem('user'));
-  const user_type = user?.user_type;
 
   const handleNav = () => {
     setNav(!nav);
   };
-
 
   const toggleServicesDropdown = () => {
     setServicesDropdown(!servicesDropdown);

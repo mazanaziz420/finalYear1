@@ -131,10 +131,10 @@ const PaymentMethod = () => {
   const handleBookingSubmit = (e) => {
     e.preventDefault();
 
-    if (!checkInDate || !checkOutDate) {
-      toast.error("Please select check-in and check-out dates.");
-      return;
-    }
+    // if (!checkInDate || !checkOutDate) {
+    //   toast.error("Please select check-in and check-out dates.");
+    //   return;
+    // }
 
     const bookingData = {
       customer_id: userId,
