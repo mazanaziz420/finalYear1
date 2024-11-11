@@ -15,6 +15,9 @@ import {
   GET_BOOKINGS_FOR_PROVIDER_REQUEST,
   GET_BOOKINGS_FOR_PROVIDER_SUCCESS,
   GET_BOOKINGS_FOR_PROVIDER_FAILURE,
+  GET_BOOKINGS_FOR_CUSTOMER_REQUEST,
+  GET_BOOKINGS_FOR_CUSTOMER_SUCCESS,
+  GET_BOOKINGS_FOR_CUSTOMER_FAILURE,
 } from '../types';
 
 const initialState = {
@@ -23,6 +26,7 @@ const initialState = {
   error: null,
   bookingSuccess: false,
   bookings: [],
+  bookingsForCustomer: [],
 };
 
 export default function bookingReducer(state = initialState, action) {
@@ -32,6 +36,7 @@ export default function bookingReducer(state = initialState, action) {
     case ACCEPT_BOOKING_REQUEST:
     case REJECT_BOOKING_REQUEST:
     case GET_BOOKINGS_FOR_PROVIDER_REQUEST:
+    case GET_BOOKINGS_FOR_CUSTOMER_REQUEST:
       return { ...state, loading: true, error: null };
 
     case CHECK_AVAILABILITY_SUCCESS:
@@ -46,12 +51,16 @@ export default function bookingReducer(state = initialState, action) {
 
     case GET_BOOKINGS_FOR_PROVIDER_SUCCESS:
       return { ...state, loading: false, bookings: action.payload };
+      
+    case GET_BOOKINGS_FOR_CUSTOMER_SUCCESS:
+      return { ...state, loading: false, bookingsForCustomer: action.payload };
 
     case CHECK_AVAILABILITY_FAILURE:
     case SEND_BOOKING_FAILURE:
     case ACCEPT_BOOKING_FAILURE:
     case REJECT_BOOKING_FAILURE:
     case GET_BOOKINGS_FOR_PROVIDER_FAILURE:
+    case GET_BOOKINGS_FOR_CUSTOMER_FAILURE:
       return { ...state, loading: false, error: action.payload };
 
     default:

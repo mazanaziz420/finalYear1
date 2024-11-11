@@ -1,19 +1,31 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AiOutlineClose, AiOutlineMenu, AiOutlineDown, AiOutlineRight, AiOutlineUser } from 'react-icons/ai';
+import { AiOutlineClose, AiOutlineMenu, AiOutlineDown, AiOutlineRight, AiOutlineUser, AiOutlineBell } from 'react-icons/ai';
+import NotificationDropdown from './NotificationDropdown';
+import { useAuth } from '../Context/AuthContext';
+
 
 const Navbar = ({ isLoggedIn, handleLogout }) => {
   const [nav, setNav] = useState(false);
   const [servicesDropdown, setServicesDropdown] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const { LoggedIn } = useAuth();
+  const user = JSON.parse(localStorage.getItem('user'));
+  const user_type = user?.user_type;
 
   const handleNav = () => {
     setNav(!nav);
   };
 
+
   const toggleServicesDropdown = () => {
     setServicesDropdown(!servicesDropdown);
+  };
+
+  const toggleNotifications = () => {
+    setNotificationsOpen(!notificationsOpen); // Toggle notification dropdown
   };
 
   const handleSubmenu = (submenu) => {
@@ -22,6 +34,12 @@ const Navbar = ({ isLoggedIn, handleLogout }) => {
 
   const handleProfileMenu = () => {
     setProfileMenuOpen(!profileMenuOpen);
+  };
+
+  const handleLogoutClick = () => {
+    handleLogout(); // Call the logout function
+    // Redirect to the login page or perform other necessary actions
+    window.location.href = '/login'; // Redirect to the login route
   };
 
   return (
@@ -54,12 +72,12 @@ const Navbar = ({ isLoggedIn, handleLogout }) => {
                         {activeSubmenu === 'Venues' && (
                           <div className="absolute left-full top-0 mt-0 ml-2 w-64 bg-gray-900 border rounded shadow-lg">
                             <ul className="pl-4 py-2">
-                              <li className="py-1"><Link to="/Services" className="text-gray-300 hover:text-white">Marques</Link></li>
-                              <li className="py-1"><Link to="/Services" className="text-gray-300 hover:text-white">Wedding Lawns</Link></li>
-                              <li className="py-1"><Link to="/Services" className="text-gray-300 hover:text-white">Villas</Link></li>
-                              <li className="py-1"><Link to="/Services" className="text-gray-300 hover:text-white">Farm Houses</Link></li>
-                              <li className="py-1"><Link to="/Services" className="text-gray-300 hover:text-white">Guest Houses</Link></li>
-                              <li className="py-1"><Link to="/Services" className="text-gray-300 hover:text-white">Hotels</Link></li>
+                              <li className="py-1"><Link to="/career" className="text-gray-300 hover:text-white">Marques</Link></li>
+                              <li className="py-1"><Link to="/career" className="text-gray-300 hover:text-white">Wedding Lawns</Link></li>
+                              <li className="py-1"><Link to="/career" className="text-gray-300 hover:text-white">Villas</Link></li>
+                              <li className="py-1"><Link to="/career" className="text-gray-300 hover:text-white">Farm Houses</Link></li>
+                              <li className="py-1"><Link to="/career" className="text-gray-300 hover:text-white">Guest Houses</Link></li>
+                              <li className="py-1"><Link to="/career" className="text-gray-300 hover:text-white">Hotels</Link></li>
                             </ul>
                           </div>
                         )}
@@ -142,8 +160,16 @@ const Navbar = ({ isLoggedIn, handleLogout }) => {
           </div>
           <div className="flex items-center">
             <Link to="/MainApp" className="text-gray-300 hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium">Add Listing</Link>
-            {isLoggedIn ? (
+            {LoggedIn ? (
               <>
+                {/* Notification Bell Icon */}
+                <div className="relative">
+                  <button onClick={toggleNotifications} className="text-gray-300 hover:bg-gray-700 p-2 rounded-md">
+                    <AiOutlineBell size={20} />
+                  </button>
+                  {notificationsOpen && <NotificationDropdown />}
+                </div>
+
                 <div className="relative">
                   <button onClick={handleProfileMenu} className="text-gray-300 hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium flex items-center">
                     <AiOutlineUser className="mr-2" />
@@ -151,11 +177,39 @@ const Navbar = ({ isLoggedIn, handleLogout }) => {
                   </button>
                   {profileMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-gray-900 border rounded shadow-lg z-30">
-                      <Link to="/CustomerDashboard" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Dashboard</Link>
-                      <Link to="/profile" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Edit Profile</Link>
-                      <Link to="/FavouritesPage" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Favourites</Link>
-                      <Link to="/Setting" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Settings</Link>
-                      <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Logout</button>
+                      {user_type === 'CUSTOMER' && (
+                        <>
+                          <Link to="/CustomerDashboard" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Dashboard</Link>
+                          <Link to="/profile" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Edit Profile</Link>
+                          <Link to="/FavouritesPage" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Favourites</Link>
+                          <Link to="/Setting" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Settings</Link>
+                          <button onClick={handleLogoutClick} className="block w-full text-left px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Logout</button>
+                        </>
+                      )}
+                      {user_type === 'STAFF' && (
+                        <>
+                          <Link to="/staff" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Dashboard</Link>
+                          <Link to="/StaffForm" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Edit Profile</Link>
+                          <button onClick={handleLogoutClick} className="block w-full text-left px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Logout</button>
+                        </>
+                      )}
+                      {user_type === 'VENUE_PROVIDER' && (
+                        <>
+                          <Link to="/dashboard" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Dashboard</Link>
+                          <Link to="/profile" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Edit Profile</Link>
+                          <Link to="/Orderpage" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Orders</Link>
+                          <button onClick={handleLogoutClick} className="block w-full text-left px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Logout</button>
+                        </>
+                      )}
+                      {user_type === 'VENDOR' && (
+                        <>
+                          <Link to="/CustomerDashboard" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Dashboard</Link>
+                          <Link to="/profile" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Edit Profile</Link>
+                          <Link to="/FavouritesPage" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Favourites</Link>
+                          <Link to="/Setting" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Settings</Link>
+                          <button onClick={handleLogoutClick} className="block w-full text-left px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700">Logout</button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>

@@ -1,54 +1,54 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ChevronDown, ChevronUp, Download, Edit, ArrowLeft } from 'lucide-react'; // Import the back icon
+import { useDispatch, useSelector } from 'react-redux';
+import { getHireRequestsByHirerId } from '../store/action/hiringStaffActions';
+import { ChevronDown, ChevronUp, Download, Edit, ArrowLeft } from 'lucide-react';
 import Sidebar from '../Dashboards/Sidebar';
 
 export default function MyStaff() {
   const [upcomingExpanded, setUpcomingExpanded] = useState(true);
+  const [staffRequests, setStaffRequests] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
 
-  const [staffRequests, setStaffRequests] = useState([
-    {
-      id: 1,
-      eventName: 'Corporate Conference',
-      date: '2023-12-15',
-      venue: 'Grand Hotel Ballroom',
-      requiredStaff: [
-        { role: 'Event Manager', count: 1, hired: 1 },
-        { role: 'Waitstaff', count: 10, hired: 8 },
-        { role: 'AV Technician', count: 2, hired: 1 },
-      ],
-      status: 'In Progress',
-      budget: 5000,
-    },
-    {
-      id: 2,
-      eventName: 'Wedding Reception',
-      date: '2024-02-20',
-      venue: 'Seaside Resort',
-      requiredStaff: [
-        { role: 'Wedding Coordinator', count: 1, hired: 1 },
-        { role: 'Bartenders', count: 3, hired: 2 },
-        { role: 'Servers', count: 8, hired: 5 },
-      ],
-      status: 'Pending',
-      budget: 3500,
-    },
-  ]);
+  const { hireRequestsByEventType, loading } = useSelector(state => state.hiring);
 
   useEffect(() => {
-    // Simulating data fetch or state update
-  }, []);
+    const token = localStorage.getItem('token');
+
+    // Fetch hire requests by event type
+    dispatch(getHireRequestsByHirerId(token));
+  }, [dispatch, location]);
+
+  useEffect(() => {
+    // Format data for display after API response
+    if (hireRequestsByEventType && Array.isArray(hireRequestsByEventType)) {
+      const formattedRequests = hireRequestsByEventType.map(request => ({
+        id: request.hire_request_id,
+        eventName: request.eventType,
+        date: request.requested_dates[0],  // Assuming the first date as event date
+        venue: request.venueLocation,
+        // requiredStaff: request.requiredStaff.map(staff => ({
+        //   role: staff.role,
+        //   count: staff.count,
+        //   hired: staff.hired,
+        // })),
+        status: request.status,
+        budget: request.wageOffered,
+      }));
+      setStaffRequests(formattedRequests);
+    }
+  }, [hireRequestsByEventType]);
 
   const handleHireMore = (requestId) => {
     navigate(`/hire-staff/${requestId}`);
   };
 
   const StaffRequestCard = ({ request }) => {
-    const totalRequired = request.requiredStaff.reduce((sum, staff) => sum + staff.count, 0);
-    const totalHired = request.requiredStaff.reduce((sum, staff) => sum + staff.hired, 0);
-    const hiringProgress = (totalHired / totalRequired) * 100;
+    // const totalRequired = request.requiredStaff.reduce((sum, staff) => sum + staff.count, 0);
+    // const totalHired = request.requiredStaff.reduce((sum, staff) => sum + staff.hired, 0);
+    // const hiringProgress = (totalHired / totalRequired) * 100;
 
     return (
       <div className="bg-white rounded-lg shadow-md mb-4 p-4">
@@ -64,7 +64,7 @@ export default function MyStaff() {
           </span>
         </div>
         <p className="font-medium text-gray-700 mb-2">Venue: {request.venue}</p>
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           {request.requiredStaff.map((staff, index) => (
             <div key={index} className="flex justify-between items-center">
               <span className="text-sm text-gray-600">{staff.role}</span>
@@ -73,8 +73,8 @@ export default function MyStaff() {
               </span>
             </div>
           ))}
-        </div>
-        <div className="mt-4">
+        </div> */}
+        {/* <div className="mt-4">
           <div className="flex justify-between text-sm text-gray-600 mb-1">
             <span>Hiring Progress</span>
             <span>{hiringProgress.toFixed(0)}%</span>
@@ -85,7 +85,7 @@ export default function MyStaff() {
               style={{ width: `${hiringProgress}%` }}
             ></div>
           </div>
-        </div>
+        </div> */}
         <div className="flex justify-between items-center mt-4">
           <p className="text-gray-700">Budget: ${request.budget}</p>
           <div className="space-x-2">
@@ -108,7 +108,6 @@ export default function MyStaff() {
   return (
     <div className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        {/* Back Button */}
         <button
           className="mb-8 text-gray-700 hover:text-gray-900 flex items-center"
           onClick={() => navigate(-1)}  // Navigate to the previous page
@@ -129,9 +128,13 @@ export default function MyStaff() {
               {upcomingExpanded ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
             </button>
           </div>
-          {upcomingExpanded && staffRequests.map(request => (
-            <StaffRequestCard key={request.id} request={request} />
-          ))}
+          {upcomingExpanded && staffRequests.length > 0 ? (
+            staffRequests.map(request => (
+              <StaffRequestCard key={request.id} request={request} />
+            ))
+          ) : (
+            <p>No staff requests available.</p>
+          )}
         </div>
         
         <div className="text-center">

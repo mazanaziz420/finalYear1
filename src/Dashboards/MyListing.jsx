@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pencil, Trash, Plus } from 'lucide-react'; // Import icons from lucide-react
 import { Link } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { getVenueByUser } from '../store/action/venuProviderAction';
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 const initialListings = [
   {
@@ -28,22 +31,18 @@ const initialListings = [
 ];
 
 const MyListings = () => {
+  const dispatch = useDispatch();
+  const { venuesByUsers } = useSelector((state) => state.venueProvider);
+  const token = localStorage.getItem('token');
+  const defaultPrice = 5000;
+
+  useEffect(() => {
+    dispatch(getVenueByUser(token));
+  }, [token, dispatch]);
+
   const [listings, setListings] = useState(initialListings);
   const [isEditing, setIsEditing] = useState(false);
   const [currentListing, setCurrentListing] = useState(null);
-
-  // const handleAddListing = () => {
-  //   const newListing = {
-  //     id: listings.length + 1,
-  //     venueName: prompt('Enter venue name:'),
-  //     venueType: prompt('Enter venue type:'),
-  //     capacity: Number(prompt('Enter capacity:')),
-  //     price: Number(prompt('Enter price:')),
-  //   };
-  //   if (newListing.venueName && newListing.venueType && newListing.capacity && newListing.price) {
-  //     setListings([...listings, newListing]);
-  //   }
-  // };
 
   const handleEditListing = (listing) => {
     setCurrentListing(listing);
@@ -66,43 +65,43 @@ const MyListings = () => {
 
   return (
     <div className="flex">
-            <Sidebar />
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">My Listings</h1>
-      <Link to="/MainApp">
-      <button
-        className="bg-green-500 text-white px-4 py-2 rounded-md mb-4"
-        
-      >
-        <Plus className="inline mr-1" /> Add New Listing
-      </button>
-      </Link>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {listings.map((listing) => (
-          <div key={listing.id} className="border rounded-lg p-4 shadow-md">
-            <h2 className="text-lg font-bold">{listing.venueName}</h2>
-            <p className="text-sm text-gray-500">Type: {listing.venueType}</p>
-            <p className="text-sm text-gray-500">Capacity: {listing.capacity}</p>
-            <p className="text-sm text-gray-500">Price: ${listing.price.toLocaleString()}</p>
-            <div className="mt-4 flex space-x-2">
-              <button
-                className="bg-blue-500 text-white px-3 py-1 rounded-md flex items-center"
-                onClick={() => handleEditListing(listing)}
-              >
-                <Pencil className="mr-1" /> Edit
-              </button>
-              <button
-                className="bg-red-500 text-white px-3 py-1 rounded-md flex items-center"
-                onClick={() => handleDeleteListing(listing.id)}
-              >
-                <Trash className="mr-1" /> Delete
-              </button>
-            </div>
-          </div>
+      <Sidebar />
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-8">My Listings</h1>
+        <Link to="/MainApp">
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded-md mb-4"
           
-        ))}
-      </div>
+        >
+          <Plus className="inline mr-1" /> Add New Listing
+        </button>
+        </Link>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {venuesByUsers.map((listing) => (
+            <div key={listing._id} className="border rounded-lg p-4 shadow-md">
+              <h2 className="text-lg font-bold">{listing.name_of_venue}</h2>
+              <p className="text-sm text-gray-500">Type: {listing.type_of_property}</p>
+              <p className="text-sm text-gray-500">Capacity: {listing.capacity}</p>
+              <p className="text-sm text-gray-500">Price: ${listing.price ? listing.price.toLocaleString() : defaultPrice}</p>
+              <div className="mt-4 flex space-x-2">
+                <button
+                  className="bg-blue-500 text-white px-3 py-1 rounded-md flex items-center"
+                  onClick={() => handleEditListing(listing)}
+                >
+                  <Pencil className="mr-1" /> Edit
+                </button>
+                <button
+                  className="bg-red-500 text-white px-3 py-1 rounded-md flex items-center"
+                  onClick={() => handleDeleteListing(listing._id)}
+                >
+                  <Trash className="mr-1" /> Delete
+                </button>
+              </div>
+            </div>
+            
+          ))}
+        </div>
       </div>
 
       {isEditing && currentListing && (
@@ -133,7 +132,7 @@ const MyListings = () => {
             <input
               type="number"
               className="border rounded-md p-2 w-full mb-2"
-              value={currentListing.price}
+              value={currentListing.price || defaultPrice}
               onChange={(e) => setCurrentListing({ ...currentListing, price: Number(e.target.value) })}
               placeholder="Price"
             />

@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { initiateSocketConnection, subscribeToNotifications, disconnectSocket } from './services/socketService';
+import { receiveNotification } from './store/action/notificationAction';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './Components/Home';
 import About from './Components/About';
@@ -84,6 +87,19 @@ const stripePromise = loadStripe("pk_test_51PzidUP7IPyRWGaHC4j7c4qNgdmBUcOw2hSVM
 
 function AppRoutes() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    initiateSocketConnection();
+
+    // Listen for notifications
+    subscribeToNotifications((notification) => {
+      dispatch(receiveNotification(notification));
+    });
+
+    // Cleanup on unmount
+    return () => disconnectSocket();
+  }, [dispatch]);
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -91,6 +107,7 @@ function AppRoutes() {
   };
 
   const handleLogout = () => {
+    localStorage.clear();
     setIsLoggedIn(false);
   };
 

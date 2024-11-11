@@ -13,7 +13,10 @@ import {
     GET_SINGLE_VENUE_FAILURE,
     DELETE_VENUE_REQUEST,
     DELETE_VENUE_SUCCESS,
-    DELETE_VENUE_FAILURE
+    DELETE_VENUE_FAILURE,
+    GET_VENUE_BY_USER_REQUEST,
+    GET_VENUE_BY_USER_SUCCESS,
+    GET_VENUE_BY_USER_FAILURE,
 } from '../types';
 
 import { PRODUCTION_BACKEND_URL } from "../urls";
@@ -110,3 +113,18 @@ export const deleteVenue = (venueId) => async (dispatch) => {
         toast.error("Failed to delete venue. Please try again.");
     }
 };
+
+export const getVenueByUser = (token) => async (dispatch) => {
+    dispatch({ type: GET_VENUE_BY_USER_REQUEST });
+    try {
+        const response = await axios.get(`${PRODUCTION_BACKEND_URL}/venueProvider/venues/by-user`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            }
+        });
+        dispatch({ type: GET_VENUE_BY_USER_SUCCESS, payload: response.data });
+    } catch (error) {
+        dispatch({ type: GET_VENUE_BY_USER_FAILURE, payload: error.message });
+        toast.error("Failed to fetch venues. Please try again.");
+    }
+}

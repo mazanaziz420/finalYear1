@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
@@ -7,10 +7,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { createPaymentIntent } from '../store/action/paymentAction';
 import { sendBookingRequest, checkAvailability } from '../store/action/bookingAction';
 import { toast } from 'react-toastify';
-import axios from 'axios'; // Import axios to fetch exchange rate
+import axios from 'axios';
 
 const PaymentMethod = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { venue: selectedItem, userId } = location.state;
 
   const [checkInDate, setCheckInDate] = useState(null);
@@ -29,10 +30,10 @@ const PaymentMethod = () => {
   const elements = useElements();
 
   const { clientSecret, loading, error } = useSelector((state) => state.payment);
-
   const { availableDates, loading: bookingLoading, error: bookingError, bookingSuccess } = useSelector((state) => state.booking);
 
   const user = JSON.parse(localStorage.getItem('user'));
+  const token = localStorage.getItem('token');
 
   // Fetch live USD to PKR exchange rate
   useEffect(() => {
@@ -47,15 +48,23 @@ const PaymentMethod = () => {
     fetchExchangeRate();
   }, []);
 
-  // useEffect(() => {
-  //   if (selectedItem) {
-  //     dispatch(checkAvailability(selectedItem._id));
-  //   }
-  // }, [dispatch, selectedItem]);
+  // Fetch availability based on selected venue
+  useEffect(() => {
+    if (selectedItem) {
+      dispatch(checkAvailability('venue', selectedItem._id, token));
+    }
+  }, [dispatch, selectedItem, token]);
 
   const isDateDisabled = (date) => {
-    return Array.isArray(availableDates) && availableDates.includes(date.toISOString().split('T')[0]);
+    const formattedDate = date.toLocaleDateString();
+    return Array.isArray(availableDates) && availableDates.includes(formattedDate);
   };
+
+  useEffect(() => {
+    if (bookingSuccess) {
+      navigate('/Mybookings');
+    }
+  }, [bookingSuccess, navigate]);
 
   // Calculate total cost based on selected service, number of days, and people
   useEffect(() => {
@@ -67,29 +76,25 @@ const PaymentMethod = () => {
         case 'Premium':
           serviceCost = selectedItem.pricing.Premium;
           break;
-        case 'Platinum': // Assuming Platinum is higher than Premium
-          if(!selectedItem.pricing.Premium) {
-            serviceCost = selectedItem.pricing.Premium * 1.2; // Example for Platinum: 20% more than Premium
-          } else {
-            serviceCost = selectedItem.pricing.Premium;
-          }
+        case 'Platinum':
+          serviceCost = selectedItem.pricing.Premium ? selectedItem.pricing.Premium * 1.2 : 0;
           break;
         case 'Standard':
         default:
           serviceCost = selectedItem.pricing.Standard;
           break;
       }
-      
-      const costInPKR = serviceCost * numberOfPeople * numberOfDays ;
+
+      const costInPKR = serviceCost * numberOfPeople * numberOfDays;
       setTotalCostInPKRWithoutPlatformFee(costInPKR);
 
-      const platformFee = (costInPKR * 0.02);
+      const platformFee = costInPKR * 0.02;
       setPlatformFee(platformFee);
-      
-      const totalCostInPKR = costInPKR + platformFee; 
+
+      const totalCostInPKR = costInPKR + platformFee;
       setTotalCostInPKR(totalCostInPKR.toFixed(2));
 
-      const costInUSD = totalCostInPKR * exchangeRate; 
+      const costInUSD = totalCostInPKR * exchangeRate;
       setTotalCostInUSD(costInUSD.toFixed(2));
     }
   }, [checkInDate, checkOutDate, numberOfPeople, serviceType, selectedItem.pricing, exchangeRate]);
@@ -117,7 +122,7 @@ const PaymentMethod = () => {
       amount: totalCostinUSD, // Use calculated total cost in USD
       payment_method: stripePaymentMethod.id,
       email: user.email,
-      venue_id: selectedItem._id
+      venue_id: selectedItem._id,
     };
 
     dispatch(createPaymentIntent(paymentData));
@@ -133,16 +138,14 @@ const PaymentMethod = () => {
 
     const bookingData = {
       customer_id: userId,
+      customer_email: user.email,
       venueId: selectedItem._id,
-      booking_date_range: [
-        checkInDate.toISOString().split('T')[0],
-        checkOutDate.toISOString().split('T')[0]
-      ],
-      serviceType,
-      numberOfPeople,
+      booking_date_range: [checkInDate.toLocaleDateString(), checkOutDate.toLocaleDateString()],
+      // serviceType,
+      // numberOfPeople,
     };
 
-    dispatch(sendBookingRequest(bookingData));
+    dispatch(sendBookingRequest('venue', bookingData, token));
   };
 
   return (
@@ -165,14 +168,14 @@ const PaymentMethod = () => {
           <p className="mt-4 text-muted-foreground">No selection made.</p>
         )}
         <h2 className="mt-6 text-lg font-semibold text-foreground">Your Booking Details</h2>
-        {/* <div className="mt-4">
+        <div className="mt-4">
           <p className="text-muted-foreground">
             Check-in: {checkInDate ? checkInDate.toLocaleDateString() : 'Not selected'}
           </p>
           <p className="text-muted-foreground">
             Check-out: {checkOutDate ? checkOutDate.toLocaleDateString() : 'Not selected'}
           </p>
-        </div> */}
+        </div>
         <p className=' text-xs text-neutral-600'>Platform Fee is 2% of Total Service Charges</p>
         <p className=' text-lg text-black'>Total Service Charges: Rs. {totalCostinPKRWithoutPlatformFee}</p>
         <p className=' text-lg text-black'>Platoform Fee: Rs. {platformFee}</p>
@@ -234,7 +237,7 @@ const PaymentMethod = () => {
             </div>
           </div>
 
-          {/* <div className="mb-4">
+          <div className="mb-4">
             <label className="block text-sm font-medium text-foreground" htmlFor="check-in">
               Check-in Date *
             </label>
@@ -243,7 +246,7 @@ const PaymentMethod = () => {
               onChange={(date) => setCheckInDate(date)}
               className="mt-1 block w-full border border-border rounded-lg p-2 bg-inherit"
               required
-              filterDate={isDateDisabled}
+              filterDate={(date) => !isDateDisabled(date)}
             />
           </div>
           <div className="mb-4">
@@ -255,31 +258,8 @@ const PaymentMethod = () => {
               onChange={(date) => setCheckOutDate(date)}
               className="mt-1 block w-full border border-border rounded-lg p-2 bg-inherit"
               required
-              filterDate={isDateDisabled}
+              filterDate={(date) => !isDateDisabled(date)}
             />
-          </div> */}
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-foreground" htmlFor="payment-method">
-              Select Payment Method *
-            </label>
-            <select
-              className="mt-1 block w-full border border-border rounded-lg p-2 bg-inherit"
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              required
-            >
-              <option value="credit-card">Credit Card</option>
-              <option value="debit-card">Debit Card</option>
-              <option value="paypal">PayPal</option>
-            </select>
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-foreground" htmlFor="card-details">
-              Card Details *
-            </label>
-            <CardElement className="p-2 border border-border rounded-lg bg-inherit" />
           </div>
 
           <button
@@ -292,10 +272,36 @@ const PaymentMethod = () => {
         </form>
 
         {error && <p className="text-red-500 mt-2">Error: {error}</p>}
-        {bookingSuccess && <p className="text-green-500 mt-2">Booking submitted successfully!</p>}
+        {bookingSuccess && <p className="text-green-500 mt-2">Booking Request submitted successfully!</p>}
       </div>
     </div>
   );
 };
 
 export default PaymentMethod;
+
+
+
+
+          // {/* <div className="mb-4">
+          //   <label className="block text-sm font-medium text-foreground" htmlFor="payment-method">
+          //     Select Payment Method *
+          //   </label>
+          //   <select
+          //     className="mt-1 block w-full border border-border rounded-lg p-2 bg-inherit"
+          //     value={paymentMethod}
+          //     onChange={(e) => setPaymentMethod(e.target.value)}
+          //     required
+          //   >
+          //     <option value="credit-card">Credit Card</option>
+          //     <option value="debit-card">Debit Card</option>
+          //     <option value="paypal">PayPal</option>
+          //   </select>
+          // </div>
+
+          // <div className="mb-4">
+          //   <label className="block text-sm font-medium text-foreground" htmlFor="card-details">
+          //     Card Details *
+          //   </label>
+          //   <CardElement className="p-2 border border-border rounded-lg bg-inherit" />
+          // </div> */}

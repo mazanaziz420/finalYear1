@@ -3,51 +3,63 @@ import { Calendar, Clock, DollarSign, Users } from 'lucide-react';
 import Sidebar from './Sidebar';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { getBookingsForProvider, acceptBooking, rejectBooking } from '../store/action/bookingAction'; // Import your action
+import { getBookingsForProvider, acceptBooking, rejectBooking } from '../store/action/bookingAction'; // Import actions
 
 export default function Orderpage() {
   const [filter, setFilter] = useState('all');
   const dispatch = useDispatch();
-  const bookings = useSelector(state => state.booking.bookings); // Assuming you have a booking slice in your Redux store
+  const [entityType, setEntityType] = useState();
+  const bookings = useSelector((state) => state.booking.bookings);
+  const user = JSON.parse(localStorage.getItem('user'));
+  const token = localStorage.getItem('token');
+  const user_type = user?.user_type; 
+  useEffect(() => {
+    if (user_type === 'VENUE_PROVIDER') {
+      setEntityType('venue');
+    } else if (user_type === 'VENDOR') {
+      setEntityType('vendor');
+    }
+  }, [user_type]); // Only run this when user_type changes
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    console.log('user: ', user);
-    dispatch(getBookingsForProvider('66cd7dcad9e6dbcbebbffa63'));
-  }, [dispatch]);
+    if (user && entityType) {
+      dispatch(getBookingsForProvider(entityType, token));
+    }
+  }, [dispatch, user, entityType, token]);
 
-
-  // Transform API response to match your UI structure
-  const bookingRequests = bookings.map(booking => ({
+  // Transform API response to match UI structure
+  const bookingRequests = bookings.map((booking) => ({
     id: booking._id,
-    customerName: booking.customer_id, // You may need to fetch customer details separately
-    customerAvatar: '/placeholder.svg?height=40&width=40', // Placeholder for avatar
-    venueName: booking.venue_id, // You may need to fetch venue details separately
-    date: booking.booking_date_range[0], // Assuming the first date is the relevant one
-    time: 'TBD', // You might need to handle time based on your booking details
-    guests: 'TBD', // You might need to set guests based on your booking details
-    price: 'TBD', // You might need to set price based on your booking details
+    customerName: booking.customer_details?.full_name || 'Unknown Customer',
+    customerAvatar: '/placeholder.svg?height=40&width=40',
+    venueName: booking.venue_details?.name || 'Unknown Venue',
+    date: booking.booking_date_range[0], // First date in the range
+    time: 'TBD',
+    guests: booking.numberOfPeople || 'TBD',
+    price: booking.totalCost || 0, // Add totalCost if available
     status: booking.status,
   }));
 
-  const filteredRequests = filter === 'all' 
-    ? bookingRequests 
-    : bookingRequests.filter((request) => request.status === filter);
+  // Filter booking requests based on status
+  const filteredRequests =
+    filter === 'all'
+      ? bookingRequests
+      : bookingRequests.filter((request) => request.status === filter);
 
   const statusColors = {
     pending: 'bg-yellow-100 text-yellow-800',
-    confirmed: 'bg-green-100 text-green-800',
-    cancelled: 'bg-red-100 text-red-800',
+    booked: 'bg-green-100 text-green-800',
+    rejected: 'bg-red-100 text-red-800',
   };
 
   const handleAccept = (bookingId) => {
-    dispatch(acceptBooking(bookingId));
-    dispatch(getBookingsForProvider('66cd7dcad9e6dbcbebbffa63'));
+    dispatch(acceptBooking(bookingId, token))
+      .then(() => dispatch(getBookingsForProvider(entityType, token)));
   };
 
   const handleReject = (bookingId) => {
-    dispatch(rejectBooking(bookingId));
-    dispatch(getBookingsForProvider('66cd7dcad9e6dbcbebbffa63'));
+    dispatch(rejectBooking(bookingId, token))
+      .then(() => dispatch(getBookingsForProvider(entityType, token)));
   };
 
   return (
@@ -104,7 +116,7 @@ export default function Orderpage() {
                 </div>
               </div>
               <div className="mt-4 flex space-x-2">
-              {request.status === 'pending' ? (
+                {request.status === 'pending' ? (
                   <>
                     <button 
                       onClick={() => handleAccept(request.id)} 

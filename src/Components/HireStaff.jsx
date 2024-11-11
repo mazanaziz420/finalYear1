@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
+// HireStaff.js
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { getAllStaffData } from '../store/action/staffActions';
 import Card1 from './Card1';
 import Footer from './Footer';
 
 const HireStaff = () => {
+  const dispatch = useDispatch();
+  const { allStaffData, loading } = useSelector((state) => state.staff); // Access state from reducer
+  
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedCity, setSelectedCity] = useState('All');
   const [priceRange, setPriceRange] = useState([0, 1000]);
@@ -12,33 +18,42 @@ const HireStaff = () => {
 
   const cities = ['All', 'Lahore', 'Karachi', 'Islamabad', 'Rawalpindi', 'Peshawar'];
 
-  const staffCategories = {
-    All: [
-      { id: 1, name: 'Ali Khan', description: 'Experienced Waiter', image: '/../images/xxx.jpeg', price: 100, city: 'Lahore', details: ['5 years of experience', 'Expert in fine dining service'] },
-      { id: 2, name: 'Sara Ahmed', description: 'Expert Chef', image: '/../images/xxx.jpeg', price: 150, city: 'Karachi', details: ['10 years of experience', 'Specializes in Italian cuisine'] },
-      { id: 3, name: 'Bilal Khan', description: 'Skilled Chef', image: '/../images/xxx.jpeg', price: 200, city: 'Islamabad', details: ['7 years of experience', 'Expert in crafting cocktails'] },
-      { id: 4, name: 'Aisha Iqbal', description: 'Professional Cleaner', image: '/../images/xxx.jpeg', price: 250, city: 'Rawalpindi', details: ['4 years of experience', 'Specializes in event clean-up'] },
-      { id: 5, name: 'Hamza Riaz', description: 'Expert Waiter', image: '/../images/xxx.jpeg', price: 300, city: 'Peshawar', details: ['8 years of experience', 'Specializes in weddings and corporate events'] },
-    ],
-    Chef: [
-      { id: 3, name: 'Bilal Khan', description: 'Skilled Chef', image: '/../images/xxx.jpeg', price: 200, city: 'Islamabad', details: ['7 years of experience', 'Expert in crafting cocktails'] },
-    
-      { id: 2, name: 'Sara Ahmed', description: 'Expert Chef', image: '/../images/xxx.jpeg', price: 150, city: 'Karachi', details: ['10 years of experience', 'Specializes in Italian cuisine'] },
-    ],
-    Waiter: [
-      { id: 5, name: 'Hamza Riaz', description: 'Expert Waiter', image: '/../images/xxx.jpeg', price: 300, city: 'Peshawar', details: ['8 years of experience', 'Specializes in weddings and corporate events'] },
-      { id: 1, name: 'Ali Khan', description: 'Experienced Waiter', image: '/../images/xxx.jpeg', price: 100, city: 'Lahore', details: ['5 years of experience', 'Expert in fine dining service'] },
-    ],
-    // Bartender: [
-    //   { id: 3, name: 'Bilal Khan', description: 'Skilled Bartender', image: '/../images/xxx.jpeg', price: 200, city: 'Islamabad', details: ['7 years of experience', 'Expert in crafting cocktails'] },
-    // ],
-    Cleaner: [
-      { id: 4, name: 'Aisha Iqbal', description: 'Professional Cleaner', image: '/../images/xxx.jpeg', price: 250, city: 'Rawalpindi', details: ['4 years of experience', 'Specializes in event clean-up'] },
-    ],
-    // DJ: [
-    //   { id: 5, name: 'Hamza Riaz', description: 'Expert DJ', image: '/../images/xxx.jpeg', price: 300, city: 'Peshawar', details: ['8 years of experience', 'Specializes in weddings and corporate events'] },
-    // ],
-  };
+  useEffect(() => {
+    dispatch(getAllStaffData()); // Dispatch action on mount
+  }, [dispatch]);
+
+  const categorizedStaff = allStaffData.reduce((acc, staff) => {
+    const category = staff.rolesPerformed || 'All';
+    if (!acc[category]) acc[category] = [];
+    acc[category].push({
+      id: staff._id,
+      name: staff.full_name,
+      description: staff.relevantSkills,
+      image: staff.profilePhoto || '/../images/xxx.png',
+      price: parseInt(staff.hourlyRate, 10) || 0,
+      city: staff.city.trim(),
+      details: [
+        `${staff.experienceYears} years of experience`,
+        `Skills: ${staff.relevantSkills}`,
+        `Preferred Shifts: ${staff.preferredShifts}`
+      ]
+    });
+    return acc;
+  }, {
+    All: allStaffData.map((staff) => ({
+      id: staff._id,
+      name: staff.full_name,
+      description: staff.relevantSkills,
+      image: staff.profilePhoto || '/../images/xxx.png',
+      price: parseInt(staff.hourlyRate, 10) || 0,
+      city: staff.city.trim(),
+      details: [
+        `${staff.experienceYears} years of experience`,
+        `Skills: ${staff.relevantSkills}`,
+        `Preferred Shifts: ${staff.preferredShifts}`
+      ]
+    }))
+  });
 
   const filteredItems = (items) =>
     items.filter(
@@ -49,10 +64,12 @@ const HireStaff = () => {
     );
 
   const renderContent = () => {
+    if (loading) return <div>Loading staff data...</div>;
+    const categoryData = categorizedStaff[selectedCategory] || [];
     return (
       <div className="flex flex-wrap justify-center">
-        {filteredItems(staffCategories[selectedCategory]).map((staff) => (
-          <Link to={`/Descriptions/${selectedCategory}/${staff.id}`} className="w-full md:w-1/3 p-4">
+        {filteredItems(categoryData).map((staff) => (
+          <Link to={`/Descriptions/${selectedCategory}/${staff.id}`} className="w-full md:w-1/3 p-4" key={staff.id}>
             <Card1
               title={staff.name}
               description={staff.description}
@@ -87,9 +104,7 @@ const HireStaff = () => {
                 <li key={city}>
                   <button
                     className={`block w-full text-left px-4 py-2 mb-2 rounded-lg ${
-                      selectedCity === city
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200 text-gray-700'
+                      selectedCity === city ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
                     }`}
                     onClick={() => {
                       setSelectedCity(city);
@@ -113,13 +128,11 @@ const HireStaff = () => {
           </button>
           {isCategoryDropdownOpen && (
             <ul className="pl-4">
-              {Object.keys(staffCategories).map((category) => (
+              {Object.keys(categorizedStaff).map((category) => (
                 <li key={category}>
                   <button
                     className={`block w-full text-left px-4 py-2 mb-2 rounded-lg ${
-                      selectedCategory === category
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200 text-gray-700'
+                      selectedCategory === category ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
                     }`}
                     onClick={() => {
                       setSelectedCategory(category);
@@ -142,7 +155,7 @@ const HireStaff = () => {
               min="0"
               value={priceRange[0]}
               onChange={handleMinPriceChange}
-              className="w-1/2 p-2 mr-2 border rounded"
+              className="w-1/2 p-2 mr-2 border rounded bg-inherit"
             />
             <span className="mx-2">-</span>
             <input
@@ -150,7 +163,7 @@ const HireStaff = () => {
               min="0"
               value={priceRange[1]}
               onChange={handleMaxPriceChange}
-              className="w-1/2 p-2 ml-2 border rounded"
+              className="w-1/2 p-2 ml-2 border rounded bg-inherit"
             />
           </div>
         </div>

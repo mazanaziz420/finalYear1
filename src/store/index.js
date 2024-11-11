@@ -6,6 +6,11 @@ import venueProviderReducer from './reducer/venueProviderReducer';
 import VendorProviderReducer from './reducer/vendorReducer';
 import paymentReducer from './reducer/paymentReducer';
 import bookingReducer from './reducer/bookingReducer';
+import userReducer from './reducer/userReducer';
+import paymentMethodReducer from './reducer/paymentMethodReducer';
+import notificationReducer from './reducer/notificationReducer';
+import staffReducer from './reducer/staffReducer';
+import hiringStaffReducer from './reducer/hiringStaffReducer';
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -13,6 +18,11 @@ const rootReducer = combineReducers({
   venueProvider: venueProviderReducer,
   vendor: VendorProviderReducer,
   booking: bookingReducer,
+  user: userReducer,
+  paymentMethod: paymentMethodReducer,
+  notifications: notificationReducer,
+  staff: staffReducer,
+  hiring: hiringStaffReducer,
 });
 
 const store = createStore(

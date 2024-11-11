@@ -1,57 +1,64 @@
-import { useState } from 'react';
-import React, { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Star, ChevronLeft, ChevronRight } from 'lucide-react'
-import { Link } from 'react-router-dom'
-// import StarRatings from 'react-star-ratings';
-import { getSingleVenue } from '../store/action/venuProviderAction'; // Action to fetch single venue
+import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { getSingleVenue, getVenues } from '../store/action/venuProviderAction'; // Import both actions
 import { toast } from 'react-toastify';
 
 const DescriptionPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const images = ['/placeholder.svg', '/placeholder.svg', '/placeholder.svg', '/placeholder.svg', '/placeholder.svg']
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const images = ['/placeholder.svg', '/placeholder.svg', '/placeholder.svg', '/placeholder.svg', '/placeholder.svg'];
 
-  const nextImage = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length)
-  }
-
-  const prevImage = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length)
-  }
-
-  // Fetch venue data from Redux store
+  // Fetch single venue and all venues from Redux store
   const { venue, loading, error } = useSelector((state) => state.venueProvider);
+  const allVenues = useSelector((state) => state.venueProvider.venues);
 
   useEffect(() => {
-    // Fetch the venue data when the component mounts
+    // Fetch the specific venue data when the component mounts
     dispatch(getSingleVenue(id));
+
+    // Fetch all venues for related venues section
+    dispatch(getVenues());
   }, [dispatch, id]);
 
   const handleBookNow = () => {
-    const user = JSON.parse(localStorage.getItem('user')); // Retrieve user details from localStorage
+    const user = JSON.parse(localStorage.getItem('user'));
     if (venue && user) {
-      navigate('/payment-method', { state: { venue, userId: user.id } }); // Pass venue and userId to the next page
+      navigate('/payment-method', { state: { venue, userId: user.id } });
     } else {
       toast.error('Error: Missing venue or user details.');
     }
   };
 
+  const nextImage = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+  };
+
   if (loading) {
-    return <div>Loading...</div>; // Optional: A loading spinner while data is being fetched
+    return <div>Loading...</div>;
   }
 
   if (error) {
     toast.error('Failed to load venue details');
-    return <div className="text-red-500">{error}</div>; // Display the error message
+    return <div className="text-red-500">{error}</div>;
   }
 
   if (!venue) {
-    return <div>No venue found</div>; // Display message if no venue is found
+    return <div>No venue found</div>;
   }
+
+  // Filter related venues by city and type_of_property
+  const relatedVenues = allVenues.filter(
+    (v) => v.city === venue.city && v.type_of_property === venue.type_of_property && v._id !== venue._id
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -63,9 +70,12 @@ const DescriptionPage = () => {
             alt="Venue Profile"
             className="w-16 h-16 rounded-full mr-4"
           />
-          <h1 className="text-2xl font-bold">ABC Venue</h1>
+          <h1 className="text-2xl font-bold">{venue.name_of_venue}</h1>
         </div>
-        <div className="text-2xl font-bold">$100/hour</div>
+        <div>
+          <div className="text-2xl font-bold">Premium ${venue.pricing['Premium']}/hour</div>
+          <div className="text-2xl font-bold">Standard ${venue.pricing['Standard']}/hour</div>
+        </div>
       </div>
 
       {/* Image Slider */}
@@ -92,27 +102,27 @@ const DescriptionPage = () => {
       {/* Overview */}
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-4">Overview</h2>
-        <p>Type of Property: Conference Hall</p>
-        <p>Venue Name: ABC Conference Center</p>
+        <p>Type of Property: {venue.type_of_property}</p>
+        <p>Venue Name: {venue.name_of_venue}</p>
       </div>
 
       {/* Details */}
       <div className="grid grid-cols-2 gap-4 mb-8">
         <div>
           <h3 className="font-semibold">City</h3>
-          <p>New York</p>
+          <p>{venue.city}</p>
         </div>
         <div>
           <h3 className="font-semibold">Address</h3>
-          <p>123 Main St, New York, NY 10001</p>
+          <p>{venue.address}</p>
         </div>
         <div>
           <h3 className="font-semibold">Capacity</h3>
-          <p>200 people</p>
+          <p>{venue.capacity}</p>
         </div>
         <div>
           <h3 className="font-semibold">Size</h3>
-          <p>2000 sq ft</p>
+          <p>{venue.size}</p>
         </div>
       </div>
 
@@ -128,17 +138,17 @@ const DescriptionPage = () => {
           <div>
             <h3 className="font-semibold">Additional Services</h3>
             <ul className="list-disc list-inside">
-              <li>Catering</li>
-              <li>AV Equipment</li>
-              <li>Event Planning</li>
+              {venue.additionalServices.map((service, index) => (
+                <li key={index}>{service}</li>
+              ))}
             </ul>
           </div>
           <div>
             <h3 className="font-semibold">Amenities</h3>
             <ul className="list-disc list-inside">
-              <li>Wi-Fi</li>
-              <li>Parking</li>
-              <li>Wheelchair Accessible</li>
+              {venue.amenities.map((amenity, index) => (
+                <li key={index}>{amenity}</li>
+              ))}
             </ul>
           </div>
         </div>
@@ -150,15 +160,15 @@ const DescriptionPage = () => {
         <div className="grid grid-cols-3 gap-4">
           <div>
             <h3 className="font-semibold">Hourly</h3>
-            <p>$100/hour</p>
+            <p>${venue.pricing['hourly'] || 'N/A'}/hour</p>
           </div>
           <div>
             <h3 className="font-semibold">Per Day</h3>
-            <p>$800/day</p>
+            <p>${venue.pricing['daily'] || 'N/A'}/day</p>
           </div>
           <div>
             <h3 className="font-semibold">Per Week</h3>
-            <p>$4000/week</p>
+            <p>${venue.pricing['weekly'] || 'N/A'}/week</p>
           </div>
         </div>
       </div>
@@ -166,13 +176,11 @@ const DescriptionPage = () => {
       {/* Description */}
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-4">Description</h2>
-        <p>
-          ABC Conference Center is a state-of-the-art venue perfect for corporate events, seminars, and workshops. With
-          modern amenities and a central location, it's the ideal choice for your next event.
-        </p>
+        <p>{venue.place_description}</p>
       </div>
 
       <button className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded" onClick={handleBookNow}>Book Now</button>
+
       {/* Reviews and Ratings */}
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-4">Reviews and Ratings</h2>
@@ -198,16 +206,20 @@ const DescriptionPage = () => {
       </div>
 
       {/* Related Venues */}
-      <div>
+      <div className="mt-8">
         <h2 className="text-xl font-bold mb-4">Related Venues</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {[1, 2, 3, 4, 5].map((venue) => (
-            <div key={venue} className="border rounded-lg overflow-hidden">
-              <img src="/placeholder.svg" alt={`Related Venue ${venue}`} className="w-full h-32 object-cover" />
+          {relatedVenues.map((relatedVenue) => (
+            <div key={relatedVenue._id} className="border rounded-lg overflow-hidden">
+              <img
+                src={relatedVenue.cover_picture || relatedVenue.venuePictures[0] || '/placeholder.svg'}
+                alt={`Related Venue ${relatedVenue.name_of_venue}`}
+                className="w-full h-32 object-cover"
+              />
               <div className="p-4">
-                <h3 className="font-semibold">Venue {venue}</h3>
-                <p className="text-sm text-gray-600">New York, NY</p>
-                <p className="text-sm font-bold mt-2">$80/hour</p>
+                <h3 className="font-semibold">{relatedVenue.name_of_venue || 'No Name Available'}</h3>
+                <p className="text-sm text-gray-600">{relatedVenue.city}, {relatedVenue.state}</p>
+                <p className="text-sm font-bold mt-2">${relatedVenue.pricing['Premium'] || relatedVenue.pricing['Standard'] || 'Price not available'}/hour</p>
               </div>
             </div>
           ))}

@@ -2,6 +2,13 @@ import React from 'react';
 import Layout from '../Components/Layout';
 
 const StaffDashboard = () => {
+
+  const user = JSON.parse(localStorage.getItem('user')); // Assuming the user data is stored in 'user' key
+
+  // Destructure the email and full name from the user object
+  const email = user?.email || 'No email available';
+  const fullName = user?.full_name || 'No name available';
+
   return (
     <Layout role="staff">
       <h1 className="text-2xl font-bold mb-6">Staff Dashboard</h1>
@@ -44,8 +51,8 @@ const StaffDashboard = () => {
       <section className="mb-6">
         <h2 className="text-xl font-semibold mb-3">Profile Management</h2>
         <div className="bg-white p-4 rounded shadow">
-          <p className="text-gray-600">Name: Alex Johnson</p>
-          <p className="text-gray-600">Email: alex.johnson@example.com</p>
+          <p className="text-gray-600">Name: {fullName}</p>
+          <p className="text-gray-600">Email: {email}</p>
           <button className="mt-2 bg-yellow-500 text-white px-4 py-2 rounded">Edit Profile</button>
         </div>
       </section>

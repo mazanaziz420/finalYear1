@@ -4,9 +4,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getVenues } from '../store/action/venuProviderAction';
 import Card from './Card';
 import Footer from './Footer';
-// const { venues, loading, error } = useSelector((state) => state.venueProvider);
+
 const Career = () => {
-  const [selectedCategory, setSelectedCategory] = useState('Marque');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedCity, setSelectedCity] = useState('All');
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
@@ -20,7 +20,6 @@ const Career = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-
     if (token) {
       setIsAuthenticated(true);
       dispatch(getVenues());
@@ -31,16 +30,28 @@ const Career = () => {
 
   const cities = ['All', 'Lahore', 'Karachi', 'Islamabad', 'Rawalpindi', 'Peshawar'];
 
-  // Adjust filter function to handle different price keys (Premium, Standard) and trim whitespace in city names
+  // Map type_of_property API values to display names
+  const propertyCategories = {
+    "Banquet Hall": "Marque",
+    "Villa/Farmhouse": "Villa",
+    "Guest House": "Guest House",
+    "Hotel": "Hotel",
+    "Farmhouse": "Farm house"
+  };
+
+  const categoryOptions = ["All", ...Object.values(propertyCategories)];
+
+  // Adjust filter function to handle category, price, and city
   const filteredItems = (items) => 
-    items.filter(
-      (item) =>
-        (selectedCity === 'All' || item.city.trim() === selectedCity) &&
-        (
-          (item.pricing.Premium && item.pricing.Premium >= priceRange[0] && item.pricing.Premium <= priceRange[1]) ||
-          (item.pricing.Standard && item.pricing.Standard >= priceRange[0] && item.pricing.Standard <= priceRange[1])
-        )
-    );
+    items.filter((item) => {
+      const matchesCity = selectedCity === 'All' || item.city.trim() === selectedCity;
+      const matchesCategory = selectedCategory === 'All' || propertyCategories[item.type_of_property] === selectedCategory;
+      console.log(selectedCategory);
+      const matchesPrice = 
+        (item.pricing.Premium && item.pricing.Premium >= priceRange[0] && item.pricing.Premium <= priceRange[1]) ||
+        (item.pricing.Standard && item.pricing.Standard >= priceRange[0] && item.pricing.Standard <= priceRange[1]);
+      return matchesCity && matchesCategory && matchesPrice;
+    });
 
   const renderContent = () => {
     if (!isAuthenticated) {
@@ -63,7 +74,6 @@ const Career = () => {
       return <div>Error fetching venues: {error}</div>;
     }
 
-    // Map through the filtered venues, using a fallback image if no cover_picture or venuePictures exist
     return (
       <div className="flex flex-col items-center w-full">
         {filteredItems(venues).map((venue) => (
@@ -82,6 +92,7 @@ const Career = () => {
 
   const handleMinPriceChange = (e) => setPriceRange([+e.target.value, priceRange[1]]);
   const handleMaxPriceChange = (e) => setPriceRange([priceRange[0], +e.target.value]);
+
   return (
     <div className="flex">
       <div className="w-1/4 p-4 bg-gray-100">
@@ -126,7 +137,7 @@ const Career = () => {
           </button>
           {isCategoryDropdownOpen && (
             <ul className="pl-4">
-              {['Wedding Hotels', 'Apartments', 'Guest House'].map((category) => (
+              {categoryOptions.map((category) => (
                 <li key={category}>
                   <button
                     className={`block w-full text-left px-4 py-2 mb-2 rounded-lg ${
